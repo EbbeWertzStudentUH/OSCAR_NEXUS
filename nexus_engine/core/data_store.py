@@ -1,5 +1,5 @@
+from itertools import starmap
 import os
-import shutil
 from typing import Iterable
 import numpy as np
 import multiprocessing
@@ -9,6 +9,8 @@ class DataColumn:
     def __init__(self, name:str, data:np.ndarray) -> None:
         self.name = name
         self.data = data
+    def __repr__(self):
+        return f"datacol: \'{self.name}' (len={len(self.data)}, type={self.data.dtype})"
 
 class DataStore:
     def __init__(self, store_path:str, multi_processing=False) -> None:
@@ -19,25 +21,28 @@ class DataStore:
         self.multi_processing = multi_processing
     
     def write_columns(self, columns: Iterable[DataColumn], sub_directory:str, replace_exists=False) -> None:
-        def save_column(column: DataColumn) -> None:
-            path = self._prepare_path(sub_directory, column.name, replace_exists)
-            self._compress_and_save_to_file(path, column.data)
-            
+        args = [(col, sub_directory, replace_exists) for col in columns]
         if self.multi_processing:
             with multiprocessing.Pool(processes=os.cpu_count()) as pool:
-                pool.map(save_column, columns)
+                pool.starmap(self.save_column, args)
         else:
-            map(save_column, columns)
-                
+            for arg in args:
+                self.save_column(*arg)
+        
+    def save_column(self, column: DataColumn, sub_directory:str, replace_exists:bool) -> None:
+        path = self._prepare_path(sub_directory, column.name, replace_exists)
+        self._compress_and_save_to_file(path, column.data)
+        print(f"saved file: {path}") 
     
     def _prepare_path(self, sub_directory:str, filename:str, replace_exists) -> str:
-        full_path = f"{self.store_path}/{sub_directory}/{filename}"
+        dir_path = f"{self.store_path}/{sub_directory}"
+        full_path = f"{dir_path}/{filename}"
         if os.path.exists(full_path):
             if replace_exists:
-                shutil.rmtree(full_path)
+                os.remove(full_path)
             else:
                 raise IOError("Attempting to write an existing file while replace_exists was False")
-        os.makedirs(full_path)
+        os.makedirs(dir_path, exist_ok=True)
         return full_path
 
     def _compress_and_save_to_file(self, path: str, values: np.ndarray) -> None:
