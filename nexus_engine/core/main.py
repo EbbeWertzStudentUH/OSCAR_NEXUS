@@ -1,14 +1,13 @@
 import pyarrow as pa
 import pyarrow.csv as pa_csv
 import time
-from itertools import starmap
 from data_store import DataColumn, DataStore 
 
 STORE_DIR = "COMPRESSED_COLS"
-STORE_DATASET_DIR = "9_median"
-MULTIPROCESS = True
-FILE = "C:/Users/ebbew/Desktop/SHIT CODE/csv_destructor/9_median_offset-ODMR-destruct.csv"
-# FILE = "C:/Users/ebbew/Desktop/SHIT CODE/csv_destructor/eduqube_formatted.csv"
+STORE_DATASET_DIR = "eduqube"
+MULTIPROCESS = False
+# FILE = "C:/Users/ebbew/Desktop/SHIT CODE/csv_destructor/9_median_offset-ODMR-destruct.csv"
+FILE = "C:/Users/ebbew/Desktop/SHIT CODE/csv_destructor/eduqube_formatted.csv"
 
 def main() -> None:
 
@@ -16,7 +15,7 @@ def main() -> None:
     df: pa.Table = pa_csv.read_csv(FILE)
     store = DataStore(STORE_DIR, MULTIPROCESS)
     columns = [DataColumn(colname, df[colname].to_numpy()) for colname in df.column_names]
-    store.write_columns(columns, STORE_DATASET_DIR, False)
+    store.write_columns(columns, STORE_DATASET_DIR, replace_exists=True)
     
     print(f"ingested dataset ({time.time() - t:.3f}s)")
 
