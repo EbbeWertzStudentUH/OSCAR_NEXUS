@@ -6,7 +6,7 @@ entity Schema {
     pk(id) : UUID
     
     fk(parent) : [UUID]
-    
+
     name : STRING
     info : STRING
 }
@@ -18,7 +18,7 @@ entity Field {
     
     name : STRING
     datatype : STRING
-    field_type : ENUM("COLUMN", "CONSTANT")
+    constant : BOOLEAN
 }
 
 entity Dataset {
@@ -61,10 +61,31 @@ entity Tag {
     name : STRING
 }
 
+entity ConstValue {
+    pk(id) : UUID
+
+    fk(field_id) : UUID
+    fk(dataset_id) : UUID
+
+    value : JSON
+}
+
+entity ColValue {
+    pk(id) : UUID
+    ' ID is also the file name that holds the column data
+
+    fk(field_id) : UUID
+    fk(dataset_id) : UUID
+}
+
 Dataset }|--|| Batch : groups
 Batch }|--|| Schema : formats
 Schema ||--|{ Field : contains
 Schema |o--|{ Schema : is subschema of
 TagKey ||--|{ Tag : assigns
 Tag }|--|{ Batch : catogorises
+ConstValue }o--|| Field : assigns
+ColValue }|--|| Field : assigns
+ConstValue }|--|| Dataset : has
+ColValue }o--|| Dataset : has
 @enduml
