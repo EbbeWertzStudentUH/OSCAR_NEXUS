@@ -1,17 +1,49 @@
-query         ::= "FIND" schema_name root? columns? constants? filter* match* subschema*
-schema_name   ::= IDENTIFIER
-root          ::= "ROOT"
-columns       ::= "COLUMNS" (IDENTIFIER {"," IDENTIFIER}*) | "*"
-constants     ::= "CONSTANTS" (IDENTIFIER {"," IDENTIFIER}*) | "*"
-filter        ::= "FILTER" prop_expression
-match         ::= "MATCH" const_expression
-subschema     ::= "SUBSCHEMA" IDENTIFIER
+query = findstatement | collectstatement | loadstatement | createstatement | deletestatement.
 
-prop_expression ::= property comparator value
-const_expression ::= constant_name comparator value
+findstatement = "FIND" ENTITY_TYPE_PLURAL discovery_clause result_specifiers.
+collectstatement = "COLLECT" [ "DEEP" ] SCHEMA_IDENTIFIER discovery_clause "AS" COLLECTION_IDENTIFIER.
+loadstatement = "LOAD" DATASET_IDENTIFIER result_specifiers.
+deletestatement = "DELETE" UUID.
+createstatement = create_tag_statement | create_tag_value_statement | create_schema_statement | create_collection_statement.
 
-property      ::= "dataset_size" | "dataset_name" | "dataset_uuid" | "dataset_uploaded"
-comparator    ::= "==" | "!=" | "<" | ">" | "<=" | ">="
-value         ::= STRING | NUMBER | TIMESTAMP
-constant_name ::= IDENTIFIER {'.' IDENTIFIER}  (* Nested constants *)
+filter_clause = "FILTER" filter_condition.
+filter_condition = property_name_filter_condition | property_value_filter_condition | tag_filter_condition | schema_constant_filter_condition.
+property_name_filter_condition = FILTERABLE_PROPERTY "=" WILDCARD_STRING_LITERAL.
+property_value_filter_condition = FILTERABLE_PROPERTY COMPARISON_OPERATOR LITERAL_VALUE.
+tag_filter_condition = IDENTIFIER "=" IDENTIFIER.
+schema_constant_filter_condition = CONSTANT_IDENTIFIER COMPARISON_OPERATOR LITERAL_VALUE.
+discovery_clause = [ "IN" collection_expression ] filter_clause.
+collection_expression = COLLECTION_IDENTIFIER [ UNION_OPERATOR COLLECTION_IDENTIFIER ].
 
+result_specifiers = [ columns_specifier ] [ constants_specifier ] [ show_specifier ] [ limit_specifier ].
+show_specifier = "SHOW" SHOWABLE_PROPERTY { "," SHOWABLE_PROPERTY }.
+limit_specifier = "LIMIT" NUMBER.
+columns_specifier = "COLUMNS" IDENTIFIER { "," IDENTIFIER }.
+constants_specifier = "CONSTANTS" IDENTIFIER { "," IDENTIFIER }.
+
+create_tag_key_statement = "CREATE" "TAG" TAG_IDENTIFIER.
+create_tag_value_statement = "CREATE" "TAG" TAG_IDENTIFIER "FOR" TAG_IDENTIFIER.
+create_schema_statement = "CREATE" "SCHEMA" SCHEMA_IDENTIFIER schema_body.
+schema_body = [ "INFO" STRING_LITERAL ] "COLUMNS" fields_defenition "CONSTANTS" fields_defenition.
+fields_defenition = field_defenition { "," field_defenition }.
+field_defenition = IDENTIFIER DATATYPE.
+create_collection_statement = "CREATE" "COLLECTION" "FROM" COLLECTION_IDENTIFIER.
+
+ENTITY_TYPE      = "SCHEMA" | "DATASET" | "BATCH" | "COLLECTION" | "TAG".
+ENTITY_TYPE_PLURAL = "SCHEMAS" | "DATASETS" | "BATCHES" | "COLLECTIONS" | "TAGS".
+FILTERABLE_PROPERTY = "SIZE" | "CREATED" | ENTITY_TYPE.
+SHOWABLE_PROPERTY = FILTERABLE_PROPERTY | "BATCH_INFO" | "SCHEMA_INFO".
+
+COLLECTION_IDENTIFIER = IDENTIFIER.
+SCHEMA_IDENTIFIER     = IDENTIFIER.
+CONSTANT_IDENTIFIER = IDENTIFIER { "->" IDENTIFIER }.
+BATCH_IDENTIFIER = IDENTIFIER.
+DATASET_IDENTIFIER = UUID | (BATCH_IDENTIFIER IDENTIFIER).
+IDENTIFIER      =  UUID | SNAKE_CASE_STRING.
+
+LITERAL_VALUE = "'" STRING "'" | NUMBER.
+WILDCARD_STRING_LITERAL = "'" CHARACTER { CHARACTER } ["*"] "'".
+DATATYPE = STRING.
+
+COMPARISON_OPERATOR = "=" | "!=" | "<" | ">" | "<=" | ">=".
+UNION_OPERATOR = "AND" | "OR" | "NOT".
