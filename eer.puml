@@ -1,0 +1,70 @@
+@startuml eer
+!define pk(x) <b>x</b>
+!define fk(x) <u>x</u>
+
+entity Schema {
+    pk(id) : UUID
+    
+    fk(parent) : [UUID]
+    
+    name : STRING
+    info : STRING
+}
+
+entity Field {
+    pk(id) : UUID
+    
+    fk(schema_id) : UUID
+    
+    name : STRING
+    datatype : STRING
+    field_type : ENUM("COLUMN", "CONSTANT")
+}
+
+entity Dataset {
+    pk(id) : UUID
+    
+    fk(batch_id) : UUID
+    
+    name : STRING
+    batch_id : UUID
+    size : INTEGER
+}
+
+entity Batch {
+    pk(id) : UUID
+    
+    fk(schema_id) : UUID
+    
+    name : STRING
+    created : TIMESTAMP
+}
+
+entity Collection {
+    pk(id) : UUID
+    
+    name : STRING
+    query_string : STRING
+}
+
+entity TagKey {
+    pk(id) : UUID
+    
+    name : STRING
+}
+
+entity Tag {
+    pk(id) : UUID
+
+    fk(tag_key_id) : UUID
+
+    name : STRING
+}
+
+Dataset }|--|| Batch : groups
+Batch }|--|| Schema : formats
+Schema ||--|{ Field : contains
+Schema |o--|{ Schema : is subschema of
+TagKey ||--|{ Tag : assigns
+Tag }|--|{ Batch : catogorises
+@enduml
