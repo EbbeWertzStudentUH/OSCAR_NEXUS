@@ -5,7 +5,7 @@ query : findstatement | collectstatement | loadstatement | createstatement | del
 findstatement : 'FIND' ENTITY_TYPE_PLURAL discovery_clause result_specifiers;
 collectstatement : 'COLLECT' ( 'DEEP' )? SCHEMA_IDENTIFIER discovery_clause_with_match 'AS' COLLECTION_IDENTIFIER;
 loadstatement : 'LOAD' DATASET_IDENTIFIER result_specifiers;
-deletestatement : 'DELETE' UUID;
+deletestatement : 'DELETE' ENTITY_TYPE UUID;
 createstatement : create_tag_key_statement | create_tag_value_statement | create_schema_statement | create_collection_statement;
 
 create_tag_key_statement : 'CREATE' 'TAG' TAG_IDENTIFIER;
