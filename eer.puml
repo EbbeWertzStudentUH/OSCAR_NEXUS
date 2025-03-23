@@ -44,7 +44,7 @@ entity Collection {
     pk(id) : UUID
     
     name : STRING
-    query_string : STRING
+    query : STRING
 }
 
 entity TagKey {
