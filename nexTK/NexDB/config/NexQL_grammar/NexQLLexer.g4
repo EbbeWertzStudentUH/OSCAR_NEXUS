@@ -1,4 +1,4 @@
-lexer grammar QueryLanguageLexer;
+lexer grammar NexQLLexer;
 
 // KEYWORDS
 // - statement

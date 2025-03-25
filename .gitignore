@@ -2,3 +2,4 @@ COMPRESSED_COLS
 .antlr
 **/__pycache__
 grammarinator
+**/antlr_generated

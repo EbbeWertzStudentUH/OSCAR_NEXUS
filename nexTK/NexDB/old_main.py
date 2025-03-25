@@ -1,7 +1,7 @@
 import pyarrow as pa
 import pyarrow.csv as pa_csv
 import time
-from data_store import DataColumn, DataStore 
+from nexTK.NexDB.store.data_store import DataColumn, DataStore 
 
 STORE_DIR = "COMPRESSED_COLS"
 STORE_DATASET_DIR = "eduqube"

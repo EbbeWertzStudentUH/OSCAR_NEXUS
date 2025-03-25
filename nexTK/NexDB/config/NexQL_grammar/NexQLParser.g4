@@ -1,9 +1,9 @@
-parser grammar QueryLanguageParser;
+parser grammar NexQLParser;
 
-options { tokenVocab=QueryLanguageLexer; }
+options { tokenVocab=NexQLLexer; }
 
 query : KW_FIND type=BI_ENTITY_TYPE_PLURAL discover=discovery_clause show=show_specifier? limit=limit_specifier? #find
-      | KW_COLLECT deep=KW_DEEP? id=simple_identifier discovery_clause_with_match KW_AS name=ID_NAME #collect
+      | KW_COLLECT deep=KW_DEEP? id=simple_identifier discover=discovery_clause_with_match KW_AS name=ID_NAME #collect
       | KW_CREATE body=create_body #create
       | KW_DELETE type=BI_ENTITY_TYPE id=ID_UUID #delete;
 
@@ -22,7 +22,7 @@ discovery_clause_with_match : collect=collection_condition? filters+=filter_cond
 
 collection_condition : KW_IN collectionIds+=simple_identifier (OP_UNION collectionIds+=simple_identifier)*;
 
-filter_condition : KW_FILTER type=BI_ENTITY_TYPE OP_EQUALS name=LI_WILDCARD_STRING #property_name_filter
+filter_condition : KW_FILTER type=BI_ENTITY_TYPE OP_EQUALS (name=LI_WILDCARD_STRING | id=ID_UUID) #property_name_filter
                  | KW_FILTER prop=BI_FILTERABLE_PROPERTY operator=OP_COMPARISON value=LI_VALUE #property_value_filter
                  | KW_FILTER tagKey=simple_identifier OP_EQUALS tagValue=simple_identifier #tag_filter;
 
