@@ -1,5 +1,6 @@
 import networkx as nx
 from sqlalchemy.sql.schema import Table
+from sqlalchemy.orm import Query, aliased
 
 
 class ImplicitJoiner:
@@ -25,12 +26,12 @@ class ImplicitJoiner:
                 for fk in column.foreign_keys:
                     source_class = graph.nodes[column.table]['clazz']
                     target_class = graph.nodes[fk.column.table]['clazz']
-                    source_field = getattr(source_class, column.name) # '{other_table}_id' field
-                    target_field = getattr(target_class, fk.column.name) # 'id' field 
+                    source_field = column.name # '{other_table}_id' field
+                    target_field = fk.column.name # 'id' field 
 
                     if (source_class, target_class) in fk_map.keys():
                         field = fk_map[(source_class, target_class)]
-                        raise ValueError(f"⚠️Implicit relations only work when there are no multiple foreign keys with the same table pair. Both {field} and {source_field} relate to {target_class}. If explicit relations should be supported, please edit this implicit joiner module.")
+                        raise ValueError(f"⚠️Implicit relations only work when there are no multiple foreign keys with the same table pair. Both {source_class} -> {field} and {source_class} -> {source_field} relate to {target_class}. If explicit relations should be supported, please edit this implicit joiner module.")
                     fk_map[(source_class, target_class)] = source_field
                     
                     graph.add_edge(column.table, fk.column.table, source_field=source_field, target_field=target_field)
@@ -43,11 +44,31 @@ class ImplicitJoiner:
     def add_relation(self, join_class:type):
         select_table, join_table = self._selectClass.__table__, join_class.__table__
         path = nx.shortest_path(self._dependency_graph, source=select_table, target=join_table)
-    
+        if len(path) == 1: path *= 2
         for i in range(len(path) - 1):
-            source_table = path[i]
-            target_table = path[i + 1]
+            target_table = path[i]
+            source_table = path[i + 1]
             source_field = self._dependency_graph[source_table][target_table]["source_field"]
             target_field = self._dependency_graph[source_table][target_table]["target_field"]
-            self._joins.add((join_class, source_field, target_field))
-            
+            self._joins.add((source_table, target_table, source_field, target_field))
+    
+    def build_joins(self, query:Query) -> tuple[Query, dict]:
+        aliasses = {}
+        for (source_table, target_table, source_field, target_field) in self._joins:
+            source_class = self._dependency_graph.nodes[source_table]["clazz"]
+            target_class = self._dependency_graph.nodes[target_table]["clazz"]
+            target_class_aliased = aliased(target_class)
+            source_atrr = getattr(source_class, source_field) # '{other_table}_id' field
+            target_attr = getattr(target_class_aliased, target_field) # 'id' field 
+            aliasses[target_class] = target_class_aliased
+            query = query.join(target_class_aliased, source_atrr == target_attr)
+        return query, aliasses
+    
+    def _debug_print_edges(self):
+        for node1, node2, data in self._dependency_graph.edges(data=True):
+            print(f"Edge: {node1} <--> {node2}".ljust(40), end='')
+            print(''.join([f"{at}: {val}".ljust(40) for at, val in data.items()]))
+    def _debug_print_joins(self):
+        for j in self._joins:
+            print("Join: ", end='')
+            print(''.join([f"{i}".ljust(30) for i in j]))

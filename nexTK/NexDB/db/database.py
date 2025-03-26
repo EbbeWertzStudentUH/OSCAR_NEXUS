@@ -17,19 +17,23 @@ def init_db():
     Base.metadata.create_all(engine)
     
 joiner = ImplicitJoiner(Base)
+joiner._debug_print_edges()
 
-query = session.query(Batch)
-joiner.set_select_class(Batch)
-for node1, node2, data in joiner._dependency_graph.edges(data=True):
-    print(f"Edge: {node1} <--> {node2}".ljust(40), end='')
-    print(''.join([f"{at}: {val}".ljust(40) for at, val in data.items()]))
-    
-joins = []
+query = session.query(Schema)
+joiner.set_select_class(Schema)
+
+joiner.add_relation(Schema)
 joiner.add_relation(Dataset)
-joiner.add_relation(Field)
+joiner.add_relation(Batch)
 
-for j in joins:
-    print(''.join([f"{i}".ljust(30) for i in j]))
+joiner._debug_print_joins()
+
+query, aliasses = joiner.build_joins(query)
+
+print(aliasses)
+
+
+
 print(str(query))
 # query_str = str(query.statement.compile(compile_kwargs={"literal_binds": True})) #literal binds, renders in the literals (otheriwse fields are compared against 'name_1' instead of the actual given name value)
 # print(query_str)
