@@ -3,3 +3,4 @@ COMPRESSED_COLS
 **/__pycache__
 grammarinator
 **/antlr_generated
+**/.idea
