@@ -32,30 +32,29 @@ KW_FOR : 'FOR';
 KW_FROM : 'FROM';
 
 // built-in identifiers
-BI_ENTITY_TYPE : KW_SCHEMA | KW_DATASET | KW_BATCH | KW_COLLECTION | KW_TAG;
 BI_ENTITY_TYPE_PLURAL : 'SCHEMAS' | 'DATASETS' | 'BATCHES' | 'COLLECTIONS' | 'TAGS';
 BI_FILTERABLE_PROPERTY : 'SIZE' | 'CREATED';
-BI_SHOWABLE_PROPERTY : BI_FILTERABLE_PROPERTY | 'BATCH_INFO' | 'SCHEMA_INFO' | BI_ENTITY_TYPE | 'COLUMNS' | 'CONSTANTS';
+BI_SHOW_ONLY_PROPERTY :  'BATCH_INFO' | 'SCHEMA_INFO' | 'COLUMNS' | 'CONSTANTS';
 
 // Value literals
-LI_VALUE : LI_STRING | F_FLOAT | F_INTEGER;
+LI_FLOAT : F_FLOAT;
 LI_INT : F_INTEGER;
-LI_WILDCARD_STRING : '\'' F_FREE_STRING ('*')? '\'';
-LI_STRING : '\'' F_FREE_STRING '\'';
+LI_WILDCARD_STRING : '"' F_FREE_STRING '*"';
+LI_STRING : '"' F_FREE_STRING '"';
 LI_DATATYPE : 'STRING' | 'INT' | 'FLOAT' | 'TIMESTAMP';
 
 // OPERATORS
-OP_COMPARISON : OP_EQUALS | '!=' | '<' | '>' | '<=' | '>=';
+OP_EQUALS : '=';
+OP_COMPARISON : '!=' | '<' | '>' | '<=' | '>=';
 OP_UNION : 'AND' | 'OR' | 'NOT';
 OP_ARROW : '->';
 OP_COMMA : ',';
-OP_EQUALS : '=';
 
 // Identifiers
-// ID_NAME : SNAKE_CASE_STRING; // actual
-// ID_UUID : UUID; // actual
-ID_NAME : '_name_'; // debug
-ID_UUID : '_uuid_'; // debug
+ID_NAME : F_SNAKE_CASE_STRING; // actual
+ID_UUID : F_UUID; // actual
+// ID_NAME : '_name_'; // debug
+// ID_UUID : '_uuid_'; // debug
 
 fragment F_FREE_STRING : [ -~]*;
 fragment F_SNAKE_CASE_STRING : [a-z] [a-zA-Z0-9_]*;

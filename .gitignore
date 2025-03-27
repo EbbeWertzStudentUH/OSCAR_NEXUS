@@ -1,6 +1,6 @@
 COMPRESSED_COLS
 .antlr
 **/__pycache__
-grammarinator
+**/grammarinator
 **/antlr_generated
 **/.idea
