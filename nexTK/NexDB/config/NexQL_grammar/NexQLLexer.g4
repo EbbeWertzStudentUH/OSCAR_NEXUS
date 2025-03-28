@@ -45,7 +45,7 @@ LI_DATATYPE : 'STRING' | 'INT' | 'FLOAT' | 'TIMESTAMP';
 
 // OPERATORS
 OP_EQUALS : '=';
-OP_COMPARISON : '!=' | '<' | '>' | '<=' | '>=';
+OP_COMPARISON_NO_EQUALS : '!=' | '<' | '>' | '<=' | '>=';
 OP_UNION : 'AND' | 'OR' | 'NOT';
 OP_ARROW : '->';
 OP_COMMA : ',';
