@@ -53,6 +53,11 @@ entity TagKey {
     name : STRING
 }
 
+entity TagAssignment {
+    pk(fk(tag_id)) : UUID
+    pk(fk(batch_id)) : UUID
+}
+
 entity Tag {
     pk(id) : UUID
 
@@ -83,7 +88,8 @@ Batch }|--|| Schema : formats
 Schema ||--|{ Field : contains
 Schema |o--|{ Schema : is subschema of
 TagKey ||--|{ Tag : assigns
-Tag }|--|{ Batch : catogorises
+TagAssignment }|--|| Batch : catogorises
+Tag ||--|{ TagAssignment : assigns
 ConstValue }o--|| Field : assigns
 ColValue }|--|| Field : assigns
 ConstValue }|--|| Dataset : has

@@ -3,7 +3,7 @@ from networkx import Graph
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Query, sessionmaker
 
-from models import Base, Batch, Dataset, Field, Schema
+from models import Base, Batch, ColValue, ConstValue, Dataset, Field, Schema, Tag
 from ImplicitJoiner import ImplicitJoiner
 
 DATABASE_URL = "sqlite:///NexDB.db"
@@ -19,11 +19,13 @@ def init_db():
 joiner = ImplicitJoiner(Base)
 joiner._debug_print_edges()
 
-query = session.query(Schema)
-joiner.set_select_class(Schema)
+query = session.query(ColValue)
+joiner.set_select_class(ColValue)
 
-joiner.add_relation(Schema)
+joiner.add_relation(ConstValue)
 joiner.add_relation(Dataset)
+joiner.add_relation(Field)
+joiner.add_relation(Schema)
 joiner.add_relation(Batch)
 
 joiner._debug_print_joins()

@@ -48,6 +48,11 @@ class Tag(Base):
     id = Column(UUID, primary_key=True)
     tag_key_id = Column(UUID, ForeignKey('tag_keys.id'))
     name = Column(String)
+    
+class TagAssignment(Base):
+    __tablename__ = 'tag_assignments'
+    tag_id = Column(UUID, ForeignKey('tags.id'), primary_key=True)
+    batch_id = Column(UUID, ForeignKey('batches.id'), primary_key=True)
 
 class ConstValue(Base):
     __tablename__ = 'const_values'
