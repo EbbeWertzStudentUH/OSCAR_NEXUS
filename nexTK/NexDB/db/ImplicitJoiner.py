@@ -3,6 +3,8 @@ from sqlalchemy import Column
 from sqlalchemy.sql.schema import Table
 from sqlalchemy.orm import Query, aliased
 
+from db.models import Schema
+
 
 class ImplicitJoiner:
     def __init__(self, Base:type):
@@ -59,7 +61,7 @@ class ImplicitJoiner:
             if join not in self._joins:
                 self._joins.append(join)
     
-    def build_joins(self, query:Query) -> tuple[Query, dict]:
+    def build_joins(self, query:Query) -> tuple[Query, dict[type, type]]:
         aliasses = {}
 
         for (_, new_table, _, _) in self._joins:
