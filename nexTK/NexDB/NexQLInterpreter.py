@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.dialects import sqlite
 
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
-from db.QueryBuilder import QueryBuilder
+from nexTK.NexDB.db.FindQueryBuilder import FindQueryBuilder
 from config.antlr_generated.NexQLParserListener import NexQLParserListener
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
@@ -12,7 +12,7 @@ from util import plural_entity_name_to_model_class
 
 class NexQlInterpreter(NexQLParserListener):
     def __init__(self, DbModelBase: type):
-        self._queryBuilder = QueryBuilder(DbModelBase)
+        self._queryBuilder = FindQueryBuilder(DbModelBase)
 
     def parse(self, query_string: str, session):
         input_stream = InputStream(query_string)

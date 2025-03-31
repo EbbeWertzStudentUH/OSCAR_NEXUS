@@ -3,7 +3,7 @@ from db.ImplicitJoiner import ImplicitJoiner
 from util import operator_from_str
 
 
-class QueryBuilder:
+class FindQueryBuilder:
     def __init__(self, Base:type):
         self._joiner = ImplicitJoiner(Base)
         self._selectClass = None
