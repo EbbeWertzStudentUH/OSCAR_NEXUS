@@ -17,4 +17,7 @@ def init_db():
     Base.metadata.create_all(engine)
     
 init_db()
-interpreter.parse("FIND 16b53aaf-cd25-4c06-9c55-c79cc227a90c", session)
+interpreter.parse("""
+                  FIND 16b53aaf-cd25-4c06-9c55-c79cc227a90c
+                  DELETE SCHEMA 16b53aaf-cd25-4c06-9c55-c79cc227a90c
+                  """, session)

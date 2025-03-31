@@ -8,9 +8,13 @@ from db.models import Schema
 
 class ImplicitJoiner:
     def __init__(self, Base:type):
-        self._joins = [] # cannot be Set() cuz insertion order needs to be preserved. Duplication is manually handled
         self._dependency_graph = self._build_dependency_graph(Base)
+        self.reset()
+        
+    def reset(self):
+        self._joins = [] # cannot be Set() cuz insertion order needs to be preserved. Duplication is manually handled
         self._selectClass = None
+        
         
     def _build_dependency_graph(self, Base:type) -> nx.Graph:
         graph = nx.Graph()
@@ -91,3 +95,4 @@ class ImplicitJoiner:
         for j in self._joins:
             print("Join: ", end='')
             print(''.join([f"{i}".ljust(30) for i in j]))
+            

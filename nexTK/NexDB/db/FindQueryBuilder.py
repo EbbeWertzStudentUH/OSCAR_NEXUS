@@ -6,6 +6,10 @@ from util import operator_from_str
 class FindQueryBuilder:
     def __init__(self, Base:type):
         self._joiner = ImplicitJoiner(Base)
+        self.reset()
+    
+    def reset(self):
+        self._joiner.reset()
         self._selectClass = None
         self._filters = []
         
@@ -17,6 +21,9 @@ class FindQueryBuilder:
         self._joiner.add_relation(clazz)
         operator = operator_from_str(operator_str)
         self._filters.append((clazz, field_name, operator, value))
+        
+    def is_set(self) -> bool:
+        return self._selectClass is not None
         
     def build(self, session):
         query = session.query(self._selectClass)

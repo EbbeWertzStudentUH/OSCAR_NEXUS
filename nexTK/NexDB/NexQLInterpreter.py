@@ -1,20 +1,23 @@
 import operator
 from uuid import UUID
 from sqlalchemy.dialects import sqlite
+from sqlalchemy.orm import Session
 
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
-from nexTK.NexDB.db.FindQueryBuilder import FindQueryBuilder
+from db.DeleteQueryBuilder import DeleteQueryBuilder
+from db.FindQueryBuilder import FindQueryBuilder
 from config.antlr_generated.NexQLParserListener import NexQLParserListener
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
 from db.models import Tag, TagKey
-from util import plural_entity_name_to_model_class
+from util import pl_entity_name_class, si_entity_name_to_class
 
 class NexQlInterpreter(NexQLParserListener):
     def __init__(self, DbModelBase: type):
-        self._queryBuilder = FindQueryBuilder(DbModelBase)
+        self._findQueryBuilder = FindQueryBuilder(DbModelBase)
+        self._deleteQueryBuilder = DeleteQueryBuilder()
 
-    def parse(self, query_string: str, session):
+    def parse(self, query_string: str, session:Session):
         input_stream = InputStream(query_string)
         lexer = NexQLLexer(input_stream)
         token_stream = CommonTokenStream(lexer)
@@ -23,20 +26,38 @@ class NexQlInterpreter(NexQLParserListener):
 
         walker = ParseTreeWalker()
         walker.walk(self, tree)
-        q = self._queryBuilder.build(session)
-        compiled_query = q.statement.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
-        print(str(compiled_query))
+        
+        if self._findQueryBuilder.is_set():
+            q = self._findQueryBuilder.build(session)
+            compiled_query = q.statement.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
+            print(f"FIND -> {compiled_query}")
 
+            
+        if self._deleteQueryBuilder.is_set():
+            q = self._deleteQueryBuilder.build(session)
+            # session.delete(q.first())
+            # session.commit()
+            compiled_query = q.statement.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
+            print(f"DELETE -> {compiled_query}")
+
+        
+        
     def enterQuery_find(self, ctx: NexQLParser.Query_findContext):
         if ctx.entity_type: # FIND entity
-            model = plural_entity_name_to_model_class(ctx.entity_type.text)
-            self._queryBuilder.set_select_class(model)
+            model = pl_entity_name_class(ctx.entity_type.text)
+            self._findQueryBuilder.set_select_class(model)
 
         elif ctx.topic: # FIND tags
-            self._queryBuilder.set_select_class(Tag)
+            self._findQueryBuilder.set_select_class(Tag)
             field, val = self.extract_id_simple(ctx.topic)
-            self._queryBuilder.add_filter(TagKey, field, '=', val)
+            self._findQueryBuilder.add_filter(TagKey, field, '=', val)
     
+    
+    def enterQuery_delete(self, ctx):
+        model = si_entity_name_to_class(ctx.entity_type.entity_type.text)
+        uuid = UUID(ctx.uuid.text)
+        self._deleteQueryBuilder.set_delete_class(model)
+        self._deleteQueryBuilder.add_delete_by_uuid(uuid)
 
     def extract_id_simple(self, ctx:NexQLParser.Id_simpleContext) -> tuple[str, object]:
         if isinstance(ctx, NexQLParser.Id_uuidContext):
@@ -45,4 +66,4 @@ class NexQlInterpreter(NexQLParserListener):
             return "name", ctx.identifier.text
 
     def enterQuery_listTopics(self, ctx: NexQLParser.Query_listTopicsContext):
-        self._queryBuilder.set_select_class(TagKey)
+        self._findQueryBuilder.set_select_class(TagKey)
