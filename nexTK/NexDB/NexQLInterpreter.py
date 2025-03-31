@@ -1,8 +1,6 @@
-import operator
 from uuid import UUID
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.orm import Session
-
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from db.DeleteQueryBuilder import DeleteQueryBuilder
 from db.FindQueryBuilder import FindQueryBuilder
@@ -10,6 +8,7 @@ from config.antlr_generated.NexQLParserListener import NexQLParserListener
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
 from db.models import Tag, TagKey
+from nexTK.NexDB.NexQlInterpreterHelper import extract_id
 from util import pl_entity_name_class, si_entity_name_to_class
 
 class NexQlInterpreter(NexQLParserListener):
@@ -39,8 +38,6 @@ class NexQlInterpreter(NexQLParserListener):
             # session.commit()
             compiled_query = q.statement.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
             print(f"DELETE -> {compiled_query}")
-
-        
         
     def enterQuery_find(self, ctx: NexQLParser.Query_findContext):
         if ctx.entity_type: # FIND entity
@@ -49,9 +46,8 @@ class NexQlInterpreter(NexQLParserListener):
 
         elif ctx.topic: # FIND tags
             self._findQueryBuilder.set_select_class(Tag)
-            field, val = self.extract_id_simple(ctx.topic)
+            field, val = extract_id(ctx.topic)
             self._findQueryBuilder.add_filter(TagKey, field, '=', val)
-    
     
     def enterQuery_delete(self, ctx):
         model = si_entity_name_to_class(ctx.entity_type.entity_type.text)
@@ -59,11 +55,7 @@ class NexQlInterpreter(NexQLParserListener):
         self._deleteQueryBuilder.set_delete_class(model)
         self._deleteQueryBuilder.add_delete_by_uuid(uuid)
 
-    def extract_id_simple(self, ctx:NexQLParser.Id_simpleContext) -> tuple[str, object]:
-        if isinstance(ctx, NexQLParser.Id_uuidContext):
-            return "id", UUID(ctx.identifier.text)
-        elif isinstance(ctx, NexQLParser.Id_nameContext):
-            return "name", ctx.identifier.text
+
 
     def enterQuery_listTopics(self, ctx: NexQLParser.Query_listTopicsContext):
         self._findQueryBuilder.set_select_class(TagKey)

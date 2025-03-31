@@ -18,10 +18,10 @@ field_assignment : fieldType=(KW_COLUMN | KW_CONSTANT) name=ID_NAME KW_TYPE data
 
 // DISCOVERY
 value_literals : values+=li_value (OP_OR values+=li_value)*;
-identifier_literals : wildcardName=LI_WILDCARD_STRING | (id_literal (OP_OR id_literal)*);
-filter_condition : KW_FILTER not=OP_NOT? entity_type=bi_filterable_entity_type OP_EQUALS identifier_literals #property_name_filter
-                 | KW_FILTER not=OP_NOT? prop=BI_FILTERABLE_PROPERTY operator=op_comparison value=value_literals #property_value_filter
-                 | KW_FILTER not=OP_NOT? tagKey=id_simple OP_EQUALS tagValues=identifier_literals #tag_filter;
+identifier_literals : wildcard_name=LI_WILDCARD_STRING | (identifiers+=id_literal (OP_OR identifiers+=id_literal)*);
+filter_condition : KW_FILTER entity_type=bi_filterable_entity_type OP_EQUALS identifier_literals #property_name_filter
+                 | KW_FILTER prop=BI_FILTERABLE_PROPERTY operator=op_comparison value=value_literals #property_value_filter
+                 | KW_FILTER tagKey=id_simple OP_EQUALS tagValues=identifier_literals #tag_filter;
 
 match_condition : KW_MATCH (nestedName=deep_nested_identifier | uuid=ID_UUID) operator=op_comparison value=li_value;
 
@@ -39,5 +39,5 @@ id_literal : identifier=ID_UUID #li_uuid | identifier=LI_STRING #li_name;
 bi_filterable_entity_type : KW_SCHEMA | KW_DATASET | KW_BATCH;
 bi_deletable_entity_type : entity_type=(KW_SCHEMA | KW_DATASET | KW_BATCH | KW_TAG | KW_TOPIC);
 bi_showable_property : BI_FILTERABLE_PROPERTY | KW_SCHEMA | KW_DATASET | KW_BATCH | KW_TAG | BI_SHOW_ONLY_PROPERTY;
-li_value : LI_FLOAT | LI_INT | LI_STRING;
+li_value : val_fl=LI_FLOAT | val_int=LI_INT | val_str=LI_STRING;
 op_comparison : OP_COMPARISON_NO_EQUALS | OP_EQUALS;

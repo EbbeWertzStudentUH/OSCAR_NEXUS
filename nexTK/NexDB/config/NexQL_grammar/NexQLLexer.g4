@@ -50,7 +50,6 @@ LI_DATATYPE : 'STRING' | 'INT' | 'FLOAT' | 'TIMESTAMP';
 OP_EQUALS : '=';
 OP_COMPARISON_NO_EQUALS : '!=' | '<' | '>' | '<=' | '>=';
 OP_OR : 'OR';
-OP_NOT : 'NOT';
 OP_ARROW : '->';
 OP_COMMA : ',';
 
