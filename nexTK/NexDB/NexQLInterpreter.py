@@ -15,6 +15,7 @@ class NexQlInterpreter(NexQLParserListener):
     def __init__(self, DbModelBase: type):
         self._findQueryBuilder = FindQueryBuilder(DbModelBase)
         self._deleteQueryBuilder = DeleteQueryBuilder()
+        # TODO RESET
 
     def parse(self, query_string: str, session:Session):
         input_stream = InputStream(query_string)
@@ -29,7 +30,7 @@ class NexQlInterpreter(NexQLParserListener):
         if self._findQueryBuilder.is_set():
             q = self._findQueryBuilder.build(session)
             compiled_query = q.statement.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
-            print(f"FIND -> {compiled_query}")
+            print(f"\n\nFIND ->\n {compiled_query}")
 
             
         if self._deleteQueryBuilder.is_set():
@@ -37,7 +38,7 @@ class NexQlInterpreter(NexQLParserListener):
             # session.delete(q.first())
             # session.commit()
             compiled_query = q.statement.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True})
-            print(f"DELETE -> {compiled_query}")
+            print(f"\n\nDELETE ->\n {compiled_query}")
         
     def enterQuery_find(self, ctx: NexQLParser.Query_findContext):
         if ctx.entity_type: # FIND entity
@@ -49,13 +50,14 @@ class NexQlInterpreter(NexQLParserListener):
             field, val = extract_id(ctx.topic)
             self._findQueryBuilder.add_filter(TagKey, field, '=', val)
             
-        is_tag, filter_data = extract_filter_condition(ctx.filters)
-        if is_tag:
-            key_field, key_value, tag_field, tag_values = filter_data
-            self._findQueryBuilder.add_tag_filter(key_field, key_value)
-        else:
-            model_class, field, value, operator = filter_data
-            self._findQueryBuilder.add_filter(model_class, field, operator, value)
+        for filter_ctx in ctx.filters:
+            is_tag, filter_data = extract_filter_condition(filter_ctx)
+            if is_tag:
+                key_field, key_value, tag_field, tag_value, operator = filter_data
+                self._findQueryBuilder.add_tag_filter(key_field, key_value, tag_field, operator, tag_value)
+            else:
+                model_class, field, value, operator = filter_data
+                self._findQueryBuilder.add_filter(model_class, field, operator, value)
     
     def enterQuery_delete(self, ctx):
         model = si_entity_name_to_class(ctx.entity_type.entity_type.text)

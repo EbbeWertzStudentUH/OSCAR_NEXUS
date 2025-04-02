@@ -18,6 +18,14 @@ def init_db():
     
 init_db()
 interpreter.parse("""
-                  FIND 16b53aaf-cd25-4c06-9c55-c79cc227a90c
-                  DELETE SCHEMA 16b53aaf-cd25-4c06-9c55-c79cc227a90c
+                  FIND BATCHES
+                  FILTER SCHEMA = "osca*"
+                  FILTER SIZE > 200
+                  FILTER project = "oscar qube" OR "oscar pinq"
+                  FILTER study = "odmr pulsed" 
                   """, session)
+# interpreter.parse("""
+#                   FIND 16b53aaf-cd25-4c06-9c55-c79cc227a90c
+#                   DELETE SCHEMA 16b53aaf-cd25-4c06-9c55-c79cc227a90c
+#                   FIND DATASETS FILTER SCHEMA = 16b53aaf-cd25-4c06-9c55-c79cc227a90c
+#                   """, session)

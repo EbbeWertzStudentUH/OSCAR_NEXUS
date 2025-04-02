@@ -1,8 +1,9 @@
 from typing import Callable
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, func, or_
 from db.ImplicitJoiner import ImplicitJoiner
-from util import Tag, TagKey, operator_from_str
+from db.models import Tag, TagKey
+from util import operator_from_str
 from sqlalchemy.orm import Session
 
 
@@ -16,7 +17,7 @@ class FindQueryBuilder:
         self._joiner.reset()
         self._selectClass = None
         self._filters = []
-        self._tag_filters: set[tuple[tuple[str, object], tuple[str, Callable, list|object]]] = set() # (key_field, key_value), (tag_field, operator, tag_value)
+        self._tag_filters: list[tuple[tuple[str, object], tuple[str, Callable, list|object]]] = [] # (key_field, key_value), (tag_field, operator, tag_value)
         
     def set_select_class(self, clazz:type):
         self._selectClass = clazz
@@ -31,7 +32,8 @@ class FindQueryBuilder:
         operator = operator_from_str(operator_str)
         self._joiner.add_relation(Tag)
         self._joiner.add_relation(TagKey)
-        self._tag_filters.add((key_field, key_value), (tag_field, operator, value))
+        
+        self._tag_filters.append(((key_field, key_value), (tag_field, operator, value)))
         
     def is_set(self) -> bool:
         return self._selectClass is not None
@@ -58,5 +60,7 @@ class FindQueryBuilder:
             key_alias, tag_alias = aliasses[TagKey], aliasses[Tag]
             tag_conditions = [self._build_tag_filter(kt, tt, key_alias, tag_alias) for kt, tt in self._tag_filters]        
             query = query.filter(or_(*tag_conditions))
+            query = query.group_by(self._selectClass.id).having(func.count(func.distinct(tag_alias.id)) == len(self._tag_filters))
+            
             
         return query

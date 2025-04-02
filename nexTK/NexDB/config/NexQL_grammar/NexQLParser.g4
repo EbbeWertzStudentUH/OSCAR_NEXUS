@@ -36,8 +36,8 @@ deep_nested_identifier : identifier_chain+=ID_NAME (OP_ARROW identifier_chain+=I
 // parsed lexer tokens
 id_simple : identifier=ID_UUID #id_uuid | identifier=ID_NAME #id_name;
 id_literal : identifier=ID_UUID #li_uuid | identifier=LI_STRING #li_name;
-bi_filterable_entity_type : KW_SCHEMA | KW_DATASET | KW_BATCH;
+bi_filterable_entity_type : entity_type=(KW_SCHEMA | KW_DATASET | KW_BATCH);
 bi_deletable_entity_type : entity_type=(KW_SCHEMA | KW_DATASET | KW_BATCH | KW_TAG | KW_TOPIC);
 bi_showable_property : BI_FILTERABLE_PROPERTY | KW_SCHEMA | KW_DATASET | KW_BATCH | KW_TAG | BI_SHOW_ONLY_PROPERTY;
 li_value : val_fl=LI_FLOAT | val_int=LI_INT | val_str=LI_STRING;
-op_comparison : OP_COMPARISON_NO_EQUALS | OP_EQUALS;
+op_comparison : operator=(OP_COMPARISON_NO_EQUALS | OP_EQUALS);

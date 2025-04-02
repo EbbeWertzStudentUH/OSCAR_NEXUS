@@ -59,7 +59,7 @@ ID_UUID : F_UUID; // actual
 // ID_NAME : '_name_'; // debug
 // ID_UUID : '_uuid_'; // debug
 
-fragment F_FREE_STRING : [ -~]*;
+fragment F_FREE_STRING : ~["\r\n]*;
 fragment F_SNAKE_CASE_STRING : [a-z] [a-zA-Z0-9_]*;
 fragment F_X : [0-9a-f];
 fragment F_X4 : F_X F_X F_X F_X;
