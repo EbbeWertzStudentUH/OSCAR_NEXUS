@@ -1,5 +1,6 @@
 import operator
 from db.models import Batch, Dataset, Schema, Tag, TagKey
+
 def pl_entity_name_class(name:str) -> type:
     return {"SCHEMAS": Schema,
             "DATASETS": Dataset,
@@ -19,4 +20,12 @@ def operator_from_str(string:str):
         '<': operator.lt,
         '>': operator.gt,
         '<=': operator.le,
-        '>=': operator.ge}[string]
+        '>=': operator.ge,
+        'ilike': lambda field, value: field.ilike(value),
+        'in': lambda field, value: field.in_(value)}[string]
+    
+def prop_to_field(prop:str) -> tuple[type, str]:
+    return{
+        "SIZE": (Dataset, 'size'),
+        "CREATED": (Dataset, 'created_at')
+    }[prop]

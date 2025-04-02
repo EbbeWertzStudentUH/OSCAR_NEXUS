@@ -8,7 +8,7 @@ from config.antlr_generated.NexQLParserListener import NexQLParserListener
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
 from db.models import Tag, TagKey
-from nexTK.NexDB.NexQlInterpreterHelper import extract_id
+from NexQlInterpreterHelper import extract_filter_condition, extract_id
 from util import pl_entity_name_class, si_entity_name_to_class
 
 class NexQlInterpreter(NexQLParserListener):
@@ -48,6 +48,14 @@ class NexQlInterpreter(NexQLParserListener):
             self._findQueryBuilder.set_select_class(Tag)
             field, val = extract_id(ctx.topic)
             self._findQueryBuilder.add_filter(TagKey, field, '=', val)
+            
+        is_tag, filter_data = extract_filter_condition(ctx.filters)
+        if is_tag:
+            key_field, key_value, tag_field, tag_values = filter_data
+            self._findQueryBuilder.add_tag_filter(key_field, key_value)
+        else:
+            model_class, field, value, operator = filter_data
+            self._findQueryBuilder.add_filter(model_class, field, operator, value)
     
     def enterQuery_delete(self, ctx):
         model = si_entity_name_to_class(ctx.entity_type.entity_type.text)
@@ -59,3 +67,4 @@ class NexQlInterpreter(NexQLParserListener):
 
     def enterQuery_listTopics(self, ctx: NexQLParser.Query_listTopicsContext):
         self._findQueryBuilder.set_select_class(TagKey)
+        

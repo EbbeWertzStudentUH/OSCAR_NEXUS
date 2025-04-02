@@ -4,3 +4,4 @@ COMPRESSED_COLS
 **/grammarinator
 **/antlr_generated
 **/.idea
+**/NexDB.db
