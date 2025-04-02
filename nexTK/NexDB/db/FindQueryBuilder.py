@@ -16,6 +16,7 @@ class FindQueryBuilder:
     def reset(self):
         self._joiner.reset()
         self._selectClass = None
+        self._limit_offset = None
         self._filters = []
         self._tag_filters: list[tuple[tuple[str, object], tuple[str, Callable, list|object]]] = [] # (key_field, key_value), (tag_field, operator, tag_value)
         
@@ -24,7 +25,8 @@ class FindQueryBuilder:
         self._joiner.set_select_class(clazz)
         
     def add_filter(self, clazz:type, field_name:str, operator_str:str, value):
-        self._joiner.add_relation(clazz)
+        if clazz is not self._selectClass:
+            self._joiner.add_relation(clazz)
         operator = operator_from_str(operator_str)
         self._filters.append((clazz, field_name, operator, value))
         
@@ -37,6 +39,10 @@ class FindQueryBuilder:
         
     def is_set(self) -> bool:
         return self._selectClass is not None
+    
+    def set_pagination(self, page_size:int, page:int):
+        if page <= 0: raise ValueError("Page number must be 1 or higher")
+        self._limit_offset = (page_size, page_size*(page-1))
     
     def _build_tag_filter(self, key_tuple: tuple[str, object], tag_tuple: tuple[str, Callable, list|object], key_alias:type, tag_alias:type):
         (key_field, key_value), (tag_field, operator, tag_value) = key_tuple, tag_tuple
@@ -52,7 +58,7 @@ class FindQueryBuilder:
         query, aliasses = self._joiner.build_joins(query)
         
         for (clazz, field_name, operator, value) in self._filters:
-            alias = aliasses[clazz]
+            alias = aliasses[clazz] if clazz in aliasses else clazz
             field = getattr(alias, field_name)
             query = query.filter(operator(field, value))
         
@@ -61,6 +67,9 @@ class FindQueryBuilder:
             tag_conditions = [self._build_tag_filter(kt, tt, key_alias, tag_alias) for kt, tt in self._tag_filters]        
             query = query.filter(or_(*tag_conditions))
             query = query.group_by(self._selectClass.id).having(func.count(func.distinct(tag_alias.id)) == len(self._tag_filters))
-            
+        
+        if self._limit_offset:
+            limit, offset = self._limit_offset
+            query = query.limit(limit).offset(offset)
             
         return query

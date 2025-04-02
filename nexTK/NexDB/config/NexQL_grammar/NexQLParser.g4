@@ -2,7 +2,7 @@ parser grammar NexQLParser;
 
 options { tokenVocab=NexQLLexer; }
 queries : query+ EOF;
-query : KW_FIND (entity_type=BI_ENTITY_TYPE_PLURAL | topic=id_simple) (KW_IN collection=id_simple)? filters+=filter_condition* show=show_specifier? limit=limit_specifier? #query_find
+query : KW_FIND (entity_type=BI_ENTITY_TYPE_PLURAL | topic=id_simple) (KW_IN collection=id_simple)? filters+=filter_condition* show=show_specifier? paginate=pagination_specifier? #query_find
       | KW_COLLECT deep=KW_DEEP? identifier=id_simple filters+=filter_condition* matches+=match_condition* KW_AS name=ID_NAME #query_collect
       | KW_CREATE body=create_body #query_create
       | KW_DELETE entity_type=bi_deletable_entity_type uuid=ID_UUID #query_delete
@@ -26,7 +26,7 @@ filter_condition : KW_FILTER entity_type=bi_filterable_entity_type OP_EQUALS ide
 match_condition : KW_MATCH (nestedName=deep_nested_identifier | uuid=ID_UUID) operator=op_comparison value=li_value;
 
 show_specifier : KW_SHOW properties+=bi_showable_property (OP_COMMA properties+=bi_showable_property)*;
-limit_specifier : KW_LIMIT amount=LI_INT;
+pagination_specifier : KW_PAGINATE amount=LI_INT KW_PAGE page=LI_INT;
 
 nested_identifier : root_identifier=id_simple OP_ARROW sub_identifier=id_simple;
 

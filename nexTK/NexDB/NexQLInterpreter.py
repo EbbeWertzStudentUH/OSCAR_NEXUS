@@ -58,6 +58,10 @@ class NexQlInterpreter(NexQLParserListener):
             else:
                 model_class, field, value, operator = filter_data
                 self._findQueryBuilder.add_filter(model_class, field, operator, value)
+        
+        if ctx.paginate:
+            page_size, page = int(ctx.paginate.amount.text), int(ctx.paginate.page.text)
+            self._findQueryBuilder.set_pagination(page_size, page)
     
     def enterQuery_delete(self, ctx):
         model = si_entity_name_to_class(ctx.entity_type.entity_type.text)

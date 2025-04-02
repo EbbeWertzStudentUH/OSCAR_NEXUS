@@ -25,8 +25,9 @@ KW_INFO : 'INFO';
 KW_TYPE : 'TYPE';
 // - options / flags
 KW_DEEP : 'DEEP';
-KW_LIMIT : 'LIMIT';
 KW_SHOW : 'SHOW';
+KW_PAGINATE : 'PAGINATE';
+KW_PAGE : 'PAGE';
 // - other
 KW_IN : 'IN';
 KW_AS : 'AS';
