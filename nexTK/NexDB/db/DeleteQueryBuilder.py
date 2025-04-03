@@ -13,10 +13,11 @@ class DeleteQueryBuilder:
     def add_delete_by_uuid(self, uuid:UUID):
         self._uuid = uuid
         
-    def build(self, session:Session):
+    def build_and_commit(self, session:Session):
         id_field = getattr(self._delete_class, self._id_field)
         query = session.query(self._delete_class).filter(id_field == self._uuid)
-        return query
+        session.delete(query.first())
+        session.commit()
         
     def reset(self):
         self._delete_class = None
