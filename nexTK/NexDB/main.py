@@ -1,3 +1,4 @@
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -23,7 +24,6 @@ interpreter.parse("""
                   FILTER SIZE > 200
                   FILTER project = "oscar qube" OR "oscar pinq"
                   FILTER study = "odmr pulsed" 
-                  PAGINATE 100 PAGE 3
                   """, session)
 # interpreter.parse("""
 #                   FIND SCHEMAS

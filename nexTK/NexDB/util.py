@@ -1,17 +1,18 @@
 import operator
-from db.models import Batch, Dataset, Schema, Tag, TagKey
 
-def pl_entity_name_class(name:str) -> type:
-    return {"SCHEMAS": Schema,
-            "DATASETS": Dataset,
-            "BATCHES": Batch}[name]
 
-def si_entity_name_to_class(name:str) -> type:
-    return {"SCHEMA": Schema,
-            "DATASET": Dataset,
-            "BATCH": Batch,
-            "TAG": Tag,
-            "TOPIC": TagKey}[name]
+def entity_to_class_name(name:str) -> type:
+    return {"SCHEMA": "Schema",
+            "SCHEMAS": "Schema",
+            "DATASET": "Dataset",
+            "DATASETS": "Dataset",
+            "BATCH": "Batch",
+            "BATCHES": "Batch",
+            "COLLECTION": "Collection",
+            "COLLECTIONS": "Collection",
+            "TOPIC": "TagKey",
+            "TOPICS": "TagKey",
+            "TAG": "Tag"}[name]
     
 def operator_from_str(string:str):
     return{
@@ -26,6 +27,6 @@ def operator_from_str(string:str):
     
 def prop_to_field(prop:str) -> tuple[type, str]:
     return{
-        "SIZE": (Dataset, 'size'),
-        "CREATED": (Dataset, 'created_at')
+        "SIZE": ("Dataset", 'size'),
+        "CREATED": ("Batch", 'created_at')
     }[prop]

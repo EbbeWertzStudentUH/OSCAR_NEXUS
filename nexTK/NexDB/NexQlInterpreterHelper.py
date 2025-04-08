@@ -1,7 +1,7 @@
 from multiprocessing import Value
 from uuid import UUID
 from config.antlr_generated.NexQLParser import NexQLParser
-from util import prop_to_field, si_entity_name_to_class
+from util import prop_to_field, entity_to_class_name
 
     
 def extract_li_value(ctx: NexQLParser.Li_valueContext) -> float | int | str:
@@ -41,7 +41,7 @@ def extract_identifier_literals(ctx: NexQLParser.Identifier_literalsContext) -> 
 
 def extract_filter_condition(ctx: NexQLParser.Filter_conditionContext) -> tuple[bool, (tuple[type, str, list|object, str] | tuple[str, object, str, list|object, str])]:
     if isinstance(ctx, NexQLParser.Property_name_filterContext):
-        model =si_entity_name_to_class(ctx.entity_type.entity_type.text)
+        model =entity_to_class_name(ctx.entity_type.entity_type.text)
         field, values, isWildCard = extract_identifier_literals(ctx.identifiers)
         operator = 'ilike' if isWildCard else 'in' if len(values) > 1 else '='
         if operator != 'in':values = values[0]            
