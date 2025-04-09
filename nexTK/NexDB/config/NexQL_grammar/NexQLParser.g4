@@ -14,7 +14,7 @@ create_body : KW_TOPIC name=ID_NAME #create_tag_key
             | KW_COLLECTION name=ID_NAME KW_FROM existing_collect_name=ID_NAME #create_collection
             | KW_SCHEMA name=ID_NAME KW_INFO info=LI_STRING fields+=field_assignment* subs+=subschema_assignment* #create_schema;
 
-field_assignment : fieldType=(KW_COLUMN | KW_CONSTANT) name=ID_NAME KW_TYPE data_type=LI_DATATYPE;
+field_assignment : field_type=(KW_COLUMN | KW_CONSTANT) name=ID_NAME KW_TYPE data_type=LI_DATATYPE;
 subschema_assignment : KW_SUBSCHEMA name=ID_NAME KW_SCHEMA sub_schema=id_simple ;
 
 // DISCOVERY

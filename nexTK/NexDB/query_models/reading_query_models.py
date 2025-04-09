@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from config.antlr_generated.NexQLParser import NexQLParser
-from query_models.reading_helper_models import SimpleId, Filters, SimpleFilterCondition, IdentifierLiterals
+from query_models.helper_query_models import SimpleId, Filters, SimpleFilterCondition, IdentifierLiterals
 from util import entity_to_class_name
 
 

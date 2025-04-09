@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, JSON, DateTime, UUID
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON, DateTime, UUID, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -16,7 +16,7 @@ class Field(Base):
     schema_id = Column(UUID, ForeignKey('schemas.id'))
     name = Column(String)
     datatype = Column(String)
-    constant = Column(Integer)
+    is_constant = Column(Boolean)
 
 class Dataset(Base):
     __tablename__ = 'datasets'
