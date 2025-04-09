@@ -1,8 +1,10 @@
-from dataclasses import dataclass
 from typing import Any, Literal
 from uuid import UUID
+
+from dataclasses import dataclass
+
+from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
-from db.models import Tag
 from util import entity_to_class_name, prop_to_field
 
 @dataclass
@@ -103,6 +105,10 @@ class SimpleFilterCondition: # FILTER ...
     def from_name_filter_context(cls, ctx: NexQLParser.Name_filterContext):
         entity_class = entity_to_class_name(ctx.entity_type.entity_type.text)
         id_literals = IdentifierLiterals.from_context(ctx.identifiers)
+        return cls.from_id_literals(id_literals, entity_class)
+
+    @classmethod
+    def from_id_literals(cls, id_literals:IdentifierLiterals, entity_class:str):
         operator = 'ilike' if id_literals.is_wildcard else 'in' if len(id_literals.values) > 1 else '='
         values = id_literals.values if operator == 'in' else id_literals.values[0]
         return cls(entity_class, id_literals.field, operator, values)
@@ -127,28 +133,50 @@ class TagFilterCondition: # FILTER ...
         return cls(key_simple_id.field, key_simple_id.value, id_literals.field, values, operator)
 
 @dataclass
-class FindQuery: # FIND ...
-    select_class:str
-    collection:SimpleId
-    simple_filters:list[SimpleFilterCondition]
-    tag_filters:list[TagFilterCondition]
+class DeepIdentifier:
+    is_name_chain:bool
+    name_chain:list[str]
+    uuid:UUID|None
 
     @classmethod
-    def from_context(cls, ctx:NexQLParser.Query_findContext):
-        entity_type, topic, collection, filters_ctx = ctx.entity_type, ctx.topic, ctx.collection, ctx.filters
-        select_class = entity_to_class_name(entity_type.entity_type.text) if entity_type else "Tag"
-        collection_filter = SimpleId.from_context(collection) if collection else None
-        simple_filters, tag_filters = [], []
-        if topic:
-            simple_id = SimpleId.from_context(topic)
-            simple_filters.append(SimpleFilterCondition.from_simple_id(simple_id, "Tag"))
+    def from_nested_name_ctx_or_uuid(cls, ctx:NexQLParser.Nested_name_identifierContext, uuid_token:NexQLLexer.ID_UUID):
+        if ctx:
+            name_chain = [name.text for name in ctx.identifier_chain]
+            return cls(True, name_chain, None)
+        else:
+            return cls(False, [], uuid_token.text)
 
-        for filter_ctx in filters_ctx:
+
+@dataclass
+class DataFilterCondition:
+    deep_identifier:DeepIdentifier
+    value: ValueLiteral
+    operator:str
+
+    @classmethod
+    def from_context(cls, ctx:NexQLParser.With_conditionContext):
+        nested_name_ctx, uuid_ctx, operator_ctx, value_ctx = ctx.nested_name, ctx.uuid, ctx.operator, ctx.value
+        deep_id = DeepIdentifier.from_nested_name_ctx_or_uuid(nested_name_ctx, uuid_ctx)
+        value = ValueLiteral.from_context(value_ctx)
+        return cls(deep_id, value, operator_ctx.operator.text)
+
+
+@dataclass
+class Filters:
+    simple_filters: list[SimpleFilterCondition]
+    tag_filters: list[TagFilterCondition]
+    data_filters: list[DataFilterCondition]
+
+    @classmethod
+    def from_contexts(cls, filter_ctxs:list[NexQLParser.Filter_conditionContext], with_condition_ctxs:list[NexQLParser.With_conditionContext] = []):
+        simple_filters, tag_filters, data_filters = [], [], []
+        for filter_ctx in filter_ctxs:
             if isinstance(filter_ctx, NexQLParser.Tag_filterContext):
                 tag_filters.append(TagFilterCondition.from_tag_filter_context(filter_ctx))
             elif isinstance(filter_ctx, NexQLParser.Property_filterContext):
                 simple_filters.append(SimpleFilterCondition.from_prop_filter_context(filter_ctx))
             elif isinstance(filter_ctx, NexQLParser.Name_filterContext):
                 simple_filters.append(SimpleFilterCondition.from_name_filter_context(filter_ctx))
-
-        return cls(select_class, collection_filter, simple_filters, tag_filters)
+        for with_ctx in with_condition_ctxs:
+            data_filters.append(DataFilterCondition.from_context(with_ctx))
+        return cls(simple_filters, tag_filters, data_filters)

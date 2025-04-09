@@ -1,23 +1,17 @@
 import inspect
 import json
+from dataclasses import asdict
 
 from sqlalchemy.orm import Session
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 from config.antlr_generated.NexQLParserListener import NexQLParserListener
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
-from query_models.reading_models import FindQuery
+from query_models.reading_query_models import FindQuery, SearchQuery
 
-
-def to_dict(obj):
-    if isinstance(obj, (list, tuple, set)):
-        return [to_dict(v) for v in obj]
-    if hasattr(obj, '__dict__'):
-        return {k: to_dict(v) for k, v in obj.__dict__.items()}
-    return obj
 
 def to_json(obj, filename='debug_output.json'):
-    obj_dict = to_dict(obj)
+    obj_dict = asdict(obj)
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(obj_dict, f, indent=2, ensure_ascii=False)
 
@@ -52,34 +46,12 @@ class NexQlInterpreter(NexQLParserListener):
         #     print(f"\n\nDELETE ->\n {compiled_query}")
         
     def enterQuery_find(self, ctx: NexQLParser.Query_findContext):
-        # print(to_dict(ctx))
         query_model = FindQuery.from_context(ctx)
         to_json(query_model)
-        # is_collections = False
-        # if ctx.entity_type: # FIND entity
-        #     model = pl_entity_name_class(ctx.entity_type.text)
-        #     self._findQueryBuilder.set_select_class(model)
-        #     is_collections = ctx.entity_type.text == 'COLLECTIONS'
-        #
-        # elif ctx.topic: # FIND tags
-        #     self._findQueryBuilder.set_select_class(Tag)
-        #     field, val = extract_id(ctx.topic)
-        #     self._findQueryBuilder.add_filter(TagKey, field, '=', val)
-        #
-        # for filter_ctx in ctx.filters:
-        #     is_tag, filter_data = extract_filter_condition(filter_ctx)
-        #     if is_collections:
-        #         pass #TODO: handle filters when select class is collection. With collection, filters are not actually made
-        #     if is_tag:
-        #         key_field, key_value, tag_field, tag_value, operator = filter_data
-        #         self._findQueryBuilder.add_tag_filter(key_field, key_value, tag_field, operator, tag_value)
-        #     else:
-        #         model_class, field, value, operator = filter_data
-        #         self._findQueryBuilder.add_filter(model_class, field, operator, value)
-        #
-        # if ctx.paginate:
-        #     page_size, page = int(ctx.paginate.amount.text), int(ctx.paginate.page.text)
-        #     self._findQueryBuilder.set_pagination(page_size, page)
+
+    def enterQuery_search(self, ctx:NexQLParser.Query_searchContext):
+        query_model = SearchQuery.from_context(ctx)
+        to_json(query_model)
     
     # def enterQuery_delete(self, ctx):
     #     model = si_entity_name_to_class(ctx.entity_type.entity_type.text)

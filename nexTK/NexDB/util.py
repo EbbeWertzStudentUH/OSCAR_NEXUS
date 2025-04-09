@@ -1,7 +1,7 @@
 import operator
 
 
-def entity_to_class_name(name:str) -> type:
+def entity_to_class_name(name:str) -> str:
     return {"SCHEMA": "Schema",
             "SCHEMAS": "Schema",
             "DATASET": "Dataset",
@@ -25,7 +25,7 @@ def operator_from_str(string:str):
         'ilike': lambda field, value: field.ilike(value),
         'in': lambda field, value: field.in_(value)}[string]
     
-def prop_to_field(prop:str) -> tuple[type, str]:
+def prop_to_field(prop:str) -> tuple[str, str]:
     return{
         "SIZE": ("Dataset", 'size'),
         "CREATED": ("Batch", 'created_at')

@@ -3,11 +3,10 @@ parser grammar NexQLParser;
 options { tokenVocab=NexQLLexer; }
 queries : query+ EOF;
 query : KW_FIND (entity_type=bi_findable_entity_type | topic=id_simple) (KW_IN collection=id_simple)? filters+=filter_condition* /*show=show_specifier? paginate=pagination_specifier?*/ #query_find
-      | KW_COLLECT /*deep=KW_DEEP?*/ identifier=id_simple filters+=filter_condition* matches+=with_condition* KW_AS name=ID_NAME #query_collect
+      | KW_COLLECT /*deep=KW_DEEP?*/ schema_id=id_simple filters+=filter_condition* data_filters+=with_condition* KW_AS name=ID_NAME #query_collect
       | KW_SEARCH (entity_type=bi_searchable_entity_type | topic=id_simple) (KW_MATCH match_literals=identifier_literals)? #query_search
       | KW_CREATE body=create_body #query_create
-      | KW_DELETE entity_type=bi_deletable_entity_type uuid=ID_UUID #query_delete
-      | KW_TOPICS #query_listTopics;
+      | KW_DELETE entity_type=bi_deletable_entity_type uuid=ID_UUID #query_delete;
 
 // CREATE (Batch and dataset are not to create)
 create_body : KW_TOPIC name=ID_NAME #create_tag_key
@@ -25,7 +24,7 @@ filter_condition : KW_FILTER entity_type=bi_filterable_entity_type OP_EQUALS ide
                  | KW_FILTER prop=bi_filterable_property operator=op_comparison value=value_literals #property_filter
                  | KW_FILTER tagKey=id_simple OP_EQUALS tagValues=identifier_literals #tag_filter;
 
-with_condition : KW_WITH (nestedName=nested_name_identifier | uuid=ID_UUID) operator=op_comparison value=li_value;
+with_condition : KW_WITH (nested_name=nested_name_identifier | uuid=ID_UUID) operator=op_comparison value=li_value;
 
 pagination_specifier : KW_PAGINATE amount=LI_INT KW_PAGE page=LI_INT;
 

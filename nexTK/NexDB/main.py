@@ -18,13 +18,14 @@ def init_db():
     Base.metadata.create_all(engine)
     
 init_db()
-interpreter.parse("""
-                  FIND BATCHES
-                  FILTER SCHEMA = "osca*"
-                  FILTER SIZE > 200
-                  FILTER project = "oscar qube" OR "oscar pinq"
-                  FILTER study = "odmr pulsed" 
-                  """, session)
+# interpreter.parse("""
+#                   FIND BATCHES
+#                   FILTER SCHEMA = "osca*"
+#                   FILTER SIZE > 200
+#                   FILTER project = "oscar qube" OR "oscar pinq"
+#                   FILTER study = "odmr pulsed"
+#                   """, session)
+interpreter.parse('SEARCH project MATCH "qube"', session)
 # interpreter.parse("""
 #                   FIND SCHEMAS
 #                   FILTER SCHEMA = "qube sch*"
