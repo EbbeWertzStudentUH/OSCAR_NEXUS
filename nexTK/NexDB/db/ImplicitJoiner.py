@@ -65,27 +65,18 @@ class ImplicitJoiner:
             if join not in self._joins:
                 self._joins.append(join)
     
-    def build_joins(self, query:Query) -> tuple[Query, dict[type, type]]:
-        aliasses = {}
-
-        for (_, new_table, _, _) in self._joins:
-            clazz = self._dependency_graph.nodes[new_table]["clazz"]
-            aliasses[clazz] = aliased(clazz)
-        
+    def build_joins(self, query:Query) -> Query:
         for (existing_table, new_table, existing_col, new_col) in self._joins:
             
             existing_class = self._dependency_graph.nodes[existing_table]["clazz"]
             new_class = self._dependency_graph.nodes[new_table]["clazz"]
             
-            existing_class_aliased = aliasses[existing_class] if existing_class is not self._selectClass else existing_class
-            new_class_aliased = aliasses[new_class] # new class is always aliased
+            existing_atrr = getattr(existing_class, existing_col.name)
+            new_attr = getattr(new_class, new_col.name)
             
-            existing_atrr = getattr(existing_class_aliased, existing_col.name)
-            new_attr = getattr(new_class_aliased, new_col.name)
+            query = query.join(new_class, existing_atrr == new_attr)
             
-            query = query.join(new_class_aliased, existing_atrr == new_attr)
-            
-        return query, aliasses
+        return query
     
     def _debug_print_edges(self):
         for node1, node2, data in self._dependency_graph.edges(data=True):
