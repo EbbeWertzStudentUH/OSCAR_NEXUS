@@ -42,6 +42,7 @@ KW_IN : 'IN';
 KW_AS : 'AS';
 KW_FOR : 'FOR';
 KW_FROM : 'FROM';
+KW_UNTAG : 'UNTAG';
 
 
 // built-in identifiers

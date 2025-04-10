@@ -6,7 +6,9 @@ query : KW_FIND (entity_type=bi_findable_entity_type | topic=id_simple) (KW_IN c
       | KW_COLLECT /*deep=KW_DEEP?*/ schema_id=id_simple filters+=filter_condition* data_filters+=with_condition* KW_AS name=ID_NAME #query_collect
       | KW_SEARCH (entity_type=bi_searchable_entity_type | topic=id_simple) (KW_MATCH match_literals=identifier_literals)? #query_search
       | KW_CREATE body=create_body #query_create
-      | KW_DELETE entity_type=bi_deletable_entity_type uuid=ID_UUID #query_delete;
+      | KW_DELETE entity_type=bi_deletable_entity_type uuid=ID_UUID #query_delete
+      | KW_TAG batch=id_simple topic=id_simple #query_tag
+      | KW_UNTAG batch=id_simple topic=id_simple OP_EQUALS tag=id_simple #query_untag;
 
 // CREATE (Batch and dataset are not to create)
 create_body : KW_TOPIC name=ID_NAME #create_tag_key

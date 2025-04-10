@@ -21,7 +21,7 @@ class CollectQuerier:
             raise ValueError(f"No Schema named '{schema_name}' found")
         return schema_obj.id
 
-    def query(self, query_model:CollectQuery, session:Session):
+    def query_colect(self, query_model:CollectQuery, session:Session):
         schema_id = self._resolve_schema_id(query_model.schema, session)
         COLLECTION_STORE.save_collection(session, query_model.save_name, schema_id, query_model.filters)
 

@@ -1,21 +1,12 @@
-import inspect
-import json
-import time
-from dataclasses import asdict
-from textwrap import indent
-
-import dacite
-from pydantic_core import to_json, from_json
+from pydantic_core import to_json
 from sqlalchemy.orm import Session
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 
-from FindQuerier import FindQuerier
+from queriers.FindQuerier import FindQuerier
 from config.antlr_generated.NexQLParserListener import NexQLParserListener
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
-from query_models.helper_query_models import Filters
 from query_models.reading_query_models import FindQuery, SearchQuery
-from dacite import from_dict
 
 
 def to_json_(obj, filename='debug_output.json'):
@@ -27,13 +18,12 @@ def to_json_(obj, filename='debug_output.json'):
 class NexQlInterpreter(NexQLParserListener):
     def __init__(self, DbModelBase: type):
         self._find_querier = FindQuerier(DbModelBase)
-        self._session:Session|None = None
         # self._findQueryBuilder = FindQueryBuilder(DbModelBase)
         # self._deleteQueryBuilder = DeleteQueryBuilder()
         # TODO RESET
 
     def parse(self, query_string: str, session:Session):
-        self._session = session
+        self._find_querier.set_session(self._session)
         input_stream = InputStream(query_string)
         lexer = NexQLLexer(input_stream)
         token_stream = CommonTokenStream(lexer)
@@ -59,7 +49,7 @@ class NexQlInterpreter(NexQLParserListener):
     def enterQuery_find(self, ctx: NexQLParser.Query_findContext):
         query_model = FindQuery.from_context(ctx)
         to_json_(query_model)
-        result = self._find_querier.query(query_model, self._session)
+        result = self._find_querier.query_find(query_model)
         print(f"result: {result}")
 
 
