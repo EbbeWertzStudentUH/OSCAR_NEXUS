@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session, Query
 
-from db.models import TagKey, Tag, ConstValue, SubSchema, Field
+from db.models import TagKey, Tag, ConstValue, SubSchema, Field, Schema
 from query_models.helper_query_models import SimpleFilterCondition, TagFilterCondition, Filters, DataFilterCondition, \
     DeepIdentifier
 from util import class_name_to_class, operator_from_str
@@ -84,6 +84,10 @@ class FilterQuerierHelper:
         return query.group_by(getattr(select_class, 'id')).having(and_(*having_clauses))
 
     def execute_filters(self, filters:Filters, select_class:type, query:Query) -> Query:
+
+        if self._collection_schema_id:
+            query = query.filter(Schema.id == self._collection_schema_id)
+
         for sf in filters.simple_filters:
             query = self.execute_simple_filter_condition(sf, query)
 

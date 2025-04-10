@@ -44,7 +44,7 @@ class Collection(Base):
     id = Column(UUID, primary_key=True)
     schema_id = Column(UUID, ForeignKey('schemas.id'))
     name = Column(String)
-    filters = Column(JSON)
+    filters = Column(String) # manually ser/de json
 
 class TagKey(Base):
     __tablename__ = 'tag_keys'
