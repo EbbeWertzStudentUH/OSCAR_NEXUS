@@ -3,22 +3,22 @@ from uuid import UUID
 from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session, Query
 
-from db.models import TagKey, Tag, ConstValue, Schema, SubSchema, Field
+from db.models import TagKey, Tag, ConstValue, SubSchema, Field
 from query_models.helper_query_models import SimpleFilterCondition, TagFilterCondition, Filters, DataFilterCondition, \
-    DeepIdentifier, SimpleId
+    DeepIdentifier
 from util import class_name_to_class, operator_from_str
 
 
 class FilterQuerierHelper:
     def __init__(self):
         self._session:Session|None = None
-        self._collection_schema:SimpleId|None = None
+        self._collection_schema_id:UUID|None = None
 
     def set_session(self, session:Session):
         self._session = session
 
-    def set_collection_schema(self, collection_schema:SimpleId):
-        self._collection_schema = collection_schema
+    def set_collection_schema(self, collection_schema_id:UUID):
+        self._collection_schema_id = collection_schema_id
 
     @staticmethod
     def _build_simple_filter_condition(filter_condition:SimpleFilterCondition):
@@ -40,23 +40,14 @@ class FilterQuerierHelper:
         if not deep_id.is_name_chain:
             return deep_id.uuid
 
-        start_schema = self._collection_schema
-        current_schema_id = start_schema.value
-        current_schema = None
-        if start_schema.field == 'name': #if it's a name, convert it to an id
-            current_schema = self._session.query(Schema.id).filter(Schema.name == start_schema.value).one_or_none()
-
-        if current_schema_id is None:
-            raise ValueError(f"No Schema named '{start_schema.value}' found")
-        current_schema_id = current_schema.id
-
+        current_schema_id = self._collection_schema_id
         for name in deep_id.sub_schemas_name_chain:
-            subschema = self._session.query(SubSchema).filter_by(parent_schema_id=current_schema_id, name=name).one_or_none()
+            sub_schema = self._session.query(SubSchema).filter_by(parent_schema_id=current_schema_id, name=name).one_or_none()
 
-            if subschema is None:
-                raise ValueError(f"No subschema named '{name}' found under schema ID {current_schema_id}")
+            if sub_schema is None:
+                raise ValueError(f"No sub schema named '{name}' found under schema ID {current_schema_id}")
 
-            current_schema_id = subschema.child_schema_id
+            current_schema_id = sub_schema.child_schema_id
 
         field = self._session.query(Field.id).filter_by(
             schema_id=current_schema_id,
@@ -90,7 +81,7 @@ class FilterQuerierHelper:
         if filters.data_filters:
             having_clauses.append(func.count(ConstValue.id.distinct()) == len(filters.data_filters))
 
-        return query.group_by(select_class.id).having(and_(*having_clauses))
+        return query.group_by(getattr(select_class, 'id')).having(and_(*having_clauses))
 
     def execute_filters(self, filters:Filters, select_class:type, query:Query) -> Query:
         for sf in filters.simple_filters:
