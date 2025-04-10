@@ -3,6 +3,18 @@ from dataclasses import dataclass
 from config.antlr_generated.NexQLParser import NexQLParser
 from query_models.helper_query_models import SimpleId
 
+@dataclass
+class TagAssignQuery:
+    batch_id: SimpleId
+    topic_id: SimpleId
+    tag_id: SimpleId
+
+    @classmethod
+    def from_context(cls, ctx: NexQLParser.Query_tagContext):
+        batch_id = SimpleId.from_context(ctx.batch)
+        topic_id = SimpleId.from_context(ctx.topic)
+        tag_id = SimpleId.from_context(ctx.tag)
+        return cls(batch_id, topic_id, tag_id)
 
 @dataclass
 class TagTopicCreateQuery:
