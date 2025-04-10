@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from queriers.AbstractQuerierClass import AbstractQuerier
-from queriers.FilterQuerierHelper import FilterQuerierHelper
+from queriers.helpers.AbstractQuerierClass import AbstractQuerier
+from queriers.helpers.FilterQuerierHelper import FilterQuerierHelper
 from query_models.reading_query_models import SearchQuery
 from util import class_name_to_class
 

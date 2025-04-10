@@ -3,6 +3,7 @@ from typing import Any, Literal
 from dataclasses import dataclass
 from uuid import UUID
 
+from Exceptions import NexQlLogicException
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
 from util import entity_to_class_name, prop_to_field
@@ -47,7 +48,7 @@ class IdentifierLiterals:
         for id_literal_ctx in ctx.identifiers:
             id_literal = LiteralId.from_context(id_literal_ctx)
             if field and field != id_literal.field:
-                raise ValueError("List of identifiers cannot be of mixed type. Use either all UUIDs or all names")
+                raise NexQlLogicException("List of identifiers cannot be of mixed type. Use either all UUIDs or all names")
             field = id_literal.field
             values.append(id_literal.value)
         return cls(field, values, False)
@@ -95,7 +96,7 @@ class SimpleFilterCondition: # FILTER ...
         values = [vl.value for vl in value_literals.values]
         operator = 'in' if len(values) > 1 else ctx.operator.operator.text
         if operator == 'in' and ctx.operator.operator.text != '=':
-            raise ValueError("Multiple value filter is only supported for the '=' operator")
+            raise NexQlLogicException("Multiple value filter is only supported for the '=' operator")
 
         if operator != 'in':
             values = values[0]
@@ -126,7 +127,7 @@ class TagFilterCondition: # FILTER ...
         key_simple_id = SimpleId.from_context(ctx.tagKey)
         id_literals = IdentifierLiterals.from_context(ctx.tagValues)
         if id_literals.is_wildcard:
-            raise ValueError("Wildcard matching not supported for tags")
+            raise NexQlLogicException("Wildcard matching not supported for tags")
 
         operator = 'in' if len(id_literals.values) > 1 else '='
         values = id_literals.values if operator == 'in' else id_literals.values[0]

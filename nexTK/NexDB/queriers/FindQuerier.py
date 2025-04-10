@@ -2,11 +2,12 @@
 from dacite import from_dict
 from pydantic_core import from_json
 
-from FilterQuerierHelper import FilterQuerierHelper
+from Exceptions import EarlyQueryStopException
+from queriers.helpers.FilterQuerierHelper import FilterQuerierHelper
 from collection_store import COLLECTION_STORE
-from db.ImplicitJoiner import ImplicitJoiner
+from queriers.helpers.ImplicitJoiner import ImplicitJoiner
 from db.models import Tag, TagKey, Schema, SubSchema, ConstValue, Field, Collection
-from queriers.AbstractQuerierClass import AbstractQuerier
+from queriers.helpers.AbstractQuerierClass import AbstractQuerier
 from query_models.helper_query_models import Filters
 from query_models.reading_query_models import FindQuery
 from sqlalchemy.orm import Session
@@ -32,7 +33,7 @@ class FindQuerier(AbstractQuerier):
 
         collection_obj = self._session.query(Collection).filter_by(name=query_model.collection).one_or_none()
         if not collection_obj:
-            raise ValueError(f"No collection named '{query_model.collection}' found")
+            raise EarlyQueryStopException(f"No collection named '{query_model.collection}' found")
 
         schema_id:str = collection_obj.schema_id
         filters_dict = from_json(collection_obj.filters)

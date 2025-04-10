@@ -1,7 +1,7 @@
-
+from Exceptions import EarlyQueryStopException
 from collection_store import COLLECTION_STORE
 from db.models import Schema
-from queriers.AbstractQuerierClass import AbstractQuerier
+from queriers.helpers.AbstractQuerierClass import AbstractQuerier
 from query_models.helper_query_models import SimpleId
 from query_models.reading_query_models import CollectQuery
 
@@ -15,7 +15,7 @@ class CollectQuerier(AbstractQuerier):
         schema_name = schema.value
         schema_obj = self._session.query(Schema.id).filter_by(name=schema_name).one_or_none()
         if schema_obj is None:
-            raise ValueError(f"No Schema named '{schema_name}' found")
+            raise EarlyQueryStopException(f"No Schema named '{schema_name}' found")
         return schema_obj.id
 
     def query_colect(self, query_model:CollectQuery):

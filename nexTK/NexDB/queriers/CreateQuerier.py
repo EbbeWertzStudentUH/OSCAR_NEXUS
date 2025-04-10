@@ -1,8 +1,9 @@
 from pydantic_core import to_json
 
+from Exceptions import EarlyQueryStopException
 from collection_store import COLLECTION_STORE
 from db.models import TagKey, Tag, Collection, Schema, Field, SubSchema
-from queriers.AbstractQuerierClass import AbstractQuerier
+from queriers.helpers.AbstractQuerierClass import AbstractQuerier
 from query_models.helper_query_models import SimpleId
 from query_models.mutating_query_models import TagTopicCreateQuery, TagCreateQuery, CollectionCreateQuery, \
     SchemaCreateQuery
@@ -21,7 +22,7 @@ class CreateQuerier(AbstractQuerier):
 
         tag_key_obj = self._session.query(TagKey).filter_by(name=tag_key_simple_id.value).one_or_none()
         if tag_key_obj is None:
-            raise ValueError(f"No topic named '{tag_key_simple_id.value}' found")
+            raise EarlyQueryStopException(f"No topic named '{tag_key_simple_id.value}' found")
         return tag_key_obj.id
 
     def _resolve_child_schema(self, child_schema_simple_id:SimpleId):
@@ -30,7 +31,7 @@ class CreateQuerier(AbstractQuerier):
 
         schema_obj = self._session.query(Schema).filter_by(name=child_schema_simple_id.value).one_or_none()
         if schema_obj is None:
-            raise ValueError(f"No topic named '{child_schema_simple_id.value}' found")
+            raise EarlyQueryStopException(f"No topic named '{child_schema_simple_id.value}' found")
         return schema_obj.id
 
     def query_create_tag(self, query_model: TagCreateQuery):
@@ -42,7 +43,7 @@ class CreateQuerier(AbstractQuerier):
 
     def query_create_collection(self, query_model:CollectionCreateQuery):
         if not COLLECTION_STORE.exists(query_model.from_name, self._session):
-            raise ValueError(f"No collection named '{query_model.from_name}' found in this query session")
+            raise EarlyQueryStopException(f"No collection named '{query_model.from_name}' found in this query session")
 
         filters = COLLECTION_STORE.get_filters(query_model.from_name, self._session)
         schema_id = COLLECTION_STORE.get_schema(query_model.from_name, self._session)
