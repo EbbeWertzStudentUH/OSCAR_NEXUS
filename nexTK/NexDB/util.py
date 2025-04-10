@@ -1,5 +1,4 @@
 import operator
-
 from db.models import Schema, Dataset, Batch, Collection, TagKey, Tag
 
 

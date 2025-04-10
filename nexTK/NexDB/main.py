@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from NexQLInterpreter import NexQlInterpreter
+from NexQLEngine import NexQLEngine
 from db.models import Base
 
 
@@ -12,7 +12,7 @@ engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-interpreter = NexQlInterpreter(Base)
+interpreter = NexQLEngine(Base)
 
 def init_db():
     Base.metadata.create_all(engine)
