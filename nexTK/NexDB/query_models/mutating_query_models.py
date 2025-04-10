@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Literal, List
 
 from config.antlr_generated.NexQLParser import NexQLParser
-from query_models.helper_query_models import SimpleFilterCondition, SimpleId
+from query_models.helper_query_models import SimpleId
 
 
 @dataclass

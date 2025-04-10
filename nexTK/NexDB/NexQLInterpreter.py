@@ -4,6 +4,8 @@ from dataclasses import asdict
 
 from sqlalchemy.orm import Session
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+
+from FindQuerier import FindQuerier
 from config.antlr_generated.NexQLParserListener import NexQLParserListener
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
@@ -17,12 +19,14 @@ def to_json(obj, filename='debug_output.json'):
 
 class NexQlInterpreter(NexQLParserListener):
     def __init__(self, DbModelBase: type):
-        pass
+        self._find_querier = FindQuerier(DbModelBase)
+        self._session:Session|None = None
         # self._findQueryBuilder = FindQueryBuilder(DbModelBase)
         # self._deleteQueryBuilder = DeleteQueryBuilder()
         # TODO RESET
 
     def parse(self, query_string: str, session:Session):
+        self._session = session
         input_stream = InputStream(query_string)
         lexer = NexQLLexer(input_stream)
         token_stream = CommonTokenStream(lexer)
@@ -48,6 +52,9 @@ class NexQlInterpreter(NexQLParserListener):
     def enterQuery_find(self, ctx: NexQLParser.Query_findContext):
         query_model = FindQuery.from_context(ctx)
         to_json(query_model)
+        result = self._find_querier.query(query_model, self._session)
+        print(f"result: {result}")
+
 
     def enterQuery_search(self, ctx:NexQLParser.Query_searchContext):
         query_model = SearchQuery.from_context(ctx)

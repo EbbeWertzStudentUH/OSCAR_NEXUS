@@ -1,5 +1,15 @@
 import operator
 
+from db.models import Schema, Dataset, Batch, Collection, TagKey, Tag
+
+
+def class_name_to_class(name:str) -> type:
+    return {"Schema": Schema,
+            "Dataset": Dataset,
+            "Batch": Batch,
+            "Collection": Collection,
+            "TagKey": TagKey,
+            "Tag": Tag}[name]
 
 def entity_to_class_name(name:str) -> str:
     return {"SCHEMA": "Schema",

@@ -24,7 +24,7 @@ filter_condition : KW_FILTER entity_type=bi_filterable_entity_type OP_EQUALS ide
                  | KW_FILTER prop=bi_filterable_property operator=op_comparison value=value_literals #property_filter
                  | KW_FILTER tagKey=id_simple OP_EQUALS tagValues=identifier_literals #tag_filter;
 
-with_condition : KW_WITH (nested_name=nested_name_identifier | uuid=ID_UUID) operator=op_comparison value=li_value;
+with_condition : KW_WITH (nested_name=nested_name_identifier | uuid=ID_UUID) operator=OP_EQUALS/*op_comparison*/ value=li_value;
 
 pagination_specifier : KW_PAGINATE amount=LI_INT KW_PAGE page=LI_INT;
 

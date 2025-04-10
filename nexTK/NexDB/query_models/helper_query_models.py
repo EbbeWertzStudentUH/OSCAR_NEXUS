@@ -135,16 +135,17 @@ class TagFilterCondition: # FILTER ...
 @dataclass
 class DeepIdentifier:
     is_name_chain:bool
-    name_chain:list[str]
+    sub_schemas_name_chain:list[str]
+    tail_field_name:str|None
     uuid:UUID|None
 
     @classmethod
     def from_nested_name_ctx_or_uuid(cls, ctx:NexQLParser.Nested_name_identifierContext, uuid_token:NexQLLexer.ID_UUID):
         if ctx:
             name_chain = [name.text for name in ctx.identifier_chain]
-            return cls(True, name_chain, None)
+            return cls(True, name_chain[:-1], name_chain[-1], None)
         else:
-            return cls(False, [], uuid_token.text)
+            return cls(False, [], None, uuid_token.text)
 
 
 @dataclass
@@ -158,7 +159,7 @@ class DataFilterCondition:
         nested_name_ctx, uuid_ctx, operator_ctx, value_ctx = ctx.nested_name, ctx.uuid, ctx.operator, ctx.value
         deep_id = DeepIdentifier.from_nested_name_ctx_or_uuid(nested_name_ctx, uuid_ctx)
         value = ValueLiteral.from_context(value_ctx)
-        return cls(deep_id, value, operator_ctx.operator.text)
+        return cls(deep_id, value, operator_ctx.text)
 
 
 @dataclass

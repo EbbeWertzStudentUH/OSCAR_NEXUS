@@ -7,8 +7,8 @@ from db.models import Schema
 
 
 class ImplicitJoiner:
-    def __init__(self, Base:type):
-        self._dependency_graph = self._build_dependency_graph(Base)
+    def __init__(self, Base:type, exclude_clases:list[type]):
+        self._dependency_graph = self._build_dependency_graph(Base, exclude_clases)
         self.reset()
         
     def reset(self):
@@ -16,11 +16,13 @@ class ImplicitJoiner:
         self._selectClass = None
         
         
-    def _build_dependency_graph(self, Base:type) -> nx.Graph:
+    def _build_dependency_graph(self, Base:type, exclude_clases:list[type]) -> nx.Graph:
         graph = nx.Graph()
 
         for class_ in Base.registry.mappers:
             clazz = class_.class_
+            if clazz in exclude_clases:
+                continue
             table: Table = clazz.__table__
 
             graph.add_node(table, clazz=clazz)

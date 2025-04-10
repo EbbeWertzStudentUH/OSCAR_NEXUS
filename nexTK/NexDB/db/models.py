@@ -10,6 +10,13 @@ class Schema(Base):
     name = Column(String)
     info = Column(String)
 
+class SubSchema(Base):
+    __tablename__ = 'subschemas'
+    id = Column(UUID, primary_key=True)
+    parent_schema_id = Column(UUID, ForeignKey('schemas.id'))
+    child_schema_id = Column(UUID, ForeignKey('schemas.id'))
+    name = Column(String)
+
 class Field(Base):
     __tablename__ = 'fields'
     id = Column(UUID, primary_key=True)
@@ -35,8 +42,9 @@ class Batch(Base):
 class Collection(Base):
     __tablename__ = 'collections'
     id = Column(UUID, primary_key=True)
+    schema_id = Column(UUID, ForeignKey('schemas.id'))
     name = Column(String)
-    query = Column(String)
+    filters = Column(JSON)
 
 class TagKey(Base):
     __tablename__ = 'tag_keys'
