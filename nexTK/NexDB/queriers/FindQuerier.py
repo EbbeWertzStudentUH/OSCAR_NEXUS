@@ -1,4 +1,3 @@
-from uuid import UUID
 
 from dacite import from_dict
 from pydantic_core import from_json
@@ -7,6 +6,7 @@ from FilterQuerierHelper import FilterQuerierHelper
 from collection_store import COLLECTION_STORE
 from db.ImplicitJoiner import ImplicitJoiner
 from db.models import Tag, TagKey, Schema, SubSchema, ConstValue, Field, Collection
+from queriers.AbstractQuerierClass import AbstractQuerier
 from query_models.helper_query_models import Filters
 from query_models.reading_query_models import FindQuery
 from sqlalchemy.orm import Session
@@ -14,17 +14,17 @@ from sqlalchemy.orm import Session
 from util import class_name_to_class
 
 
-class FindQuerier:
+class FindQuerier(AbstractQuerier):
     def __init__(self, Base:type):
+        super().__init__()
         self._joiner = ImplicitJoiner(Base, exclude_clases=[SubSchema])
         self._filter_querier = FilterQuerierHelper()
-        self._session:Session|None = None
 
     def set_session(self, session:Session):
-        self._session = session
+        super().set_session(session)
         self._filter_querier.set_session(session)
 
-    def _resolve_collection_data(self, query_model:FindQuery) -> tuple[UUID, Filters]:
+    def _resolve_collection_data(self, query_model:FindQuery) -> tuple[str, Filters]:
         if COLLECTION_STORE.exists(query_model.collection, self._session):
             filters = COLLECTION_STORE.get_filter(query_model.collection, self._session)
             schema_id = COLLECTION_STORE.get_schema_id(query_model.collection, self._session)
@@ -34,7 +34,7 @@ class FindQuerier:
         if not collection_obj:
             raise ValueError(f"No collection named '{query_model.collection}' found")
 
-        schema_id:UUID = collection_obj.schema_id
+        schema_id:str = collection_obj.schema_id
         filters_dict = from_json(collection_obj.filters)
         filters:Filters = from_dict(Filters, filters_dict)
         return schema_id, filters

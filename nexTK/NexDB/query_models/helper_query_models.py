@@ -1,7 +1,7 @@
 from typing import Any, Literal
-from uuid import UUID
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from config.antlr_generated.NexQLLexer import NexQLLexer
 from config.antlr_generated.NexQLParser import NexQLParser
@@ -10,31 +10,31 @@ from util import entity_to_class_name, prop_to_field
 @dataclass
 class SimpleId: # ID_NAME or ID_UUID
     field:Literal['name', 'id']
-    value:str|UUID
+    value:str
 
     @classmethod
     def from_context(cls, ctx:NexQLParser.Id_simpleContext):
         if isinstance(ctx, NexQLParser.Id_uuidContext):
-            return cls('id', UUID(ctx.identifier.text))
+            return cls('id', str(UUID(ctx.identifier.text))) # UUID constructor for validation & format consistency
         elif isinstance(ctx, NexQLParser.Id_nameContext):
             return cls('name', ctx.identifier.text)
 
 @dataclass
 class LiteralId: # ID_NAME or ID_UUID
     field:Literal['name', 'id']
-    value:str|UUID
+    value:str
 
     @classmethod
     def from_context(cls, ctx:NexQLParser.Id_literalContext):
         if isinstance(ctx, NexQLParser.Li_uuidContext):
-            return cls('id', UUID(ctx.identifier.text))
+            return cls('id', str(UUID(ctx.identifier.text))) # UUID constructor for validation & format consistency
         elif isinstance(ctx, NexQLParser.Li_nameContext):
             return cls('name', ctx.identifier.text.strip('"'))
 
 @dataclass
 class IdentifierLiterals:
     field:str
-    values:list[str|UUID]
+    values:list[str]
     is_wildcard:bool
     @classmethod
     def from_context(cls, ctx: NexQLParser.Identifier_literalsContext):
@@ -116,9 +116,9 @@ class SimpleFilterCondition: # FILTER ...
 @dataclass
 class TagFilterCondition: # FILTER ...
     key_field:str
-    key_value:str|UUID
+    key_value:str
     tag_field:str
-    tag_value:str|UUID | list[str|UUID]
+    tag_value:str | list[str]
     operator:str
 
     @classmethod
@@ -137,7 +137,7 @@ class DeepIdentifier:
     is_name_chain:bool
     sub_schemas_name_chain:list[str]
     tail_field_name:str|None
-    uuid:UUID|None
+    uuid:str|None
 
     @classmethod
     def from_nested_name_ctx_or_uuid(cls, ctx:NexQLParser.Nested_name_identifierContext, uuid_token:NexQLLexer.ID_UUID):

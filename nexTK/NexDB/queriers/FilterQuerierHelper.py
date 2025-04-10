@@ -1,4 +1,3 @@
-from uuid import UUID
 
 from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session, Query
@@ -12,12 +11,12 @@ from util import class_name_to_class, operator_from_str
 class FilterQuerierHelper:
     def __init__(self):
         self._session:Session|None = None
-        self._collection_schema_id:UUID|None = None
+        self._collection_schema_id:str|None = None
 
     def set_session(self, session:Session):
         self._session = session
 
-    def set_collection_schema(self, collection_schema_id:UUID):
+    def set_collection_schema(self, collection_schema_id:str):
         self._collection_schema_id = collection_schema_id
 
     @staticmethod
@@ -36,7 +35,7 @@ class FilterQuerierHelper:
         tag_condition = operator(tag_att, filter_condition.tag_value)
         return and_(key_condition, tag_condition)
 
-    def _resolve_deep_identifier(self, deep_id:DeepIdentifier) -> UUID:
+    def _resolve_deep_identifier(self, deep_id:DeepIdentifier) -> str:
         if not deep_id.is_name_chain:
             return deep_id.uuid
 

@@ -1,17 +1,18 @@
 from sqlalchemy.orm import Session
+
+from queriers.AbstractQuerierClass import AbstractQuerier
 from queriers.FilterQuerierHelper import FilterQuerierHelper
 from query_models.reading_query_models import SearchQuery
 from util import class_name_to_class
 
-
-class SearchQuerier:
+class SearchQuerier(AbstractQuerier):
 
     def __init__(self):
+        super().__init__()
         self._filter_querier = FilterQuerierHelper()
-        self._session:Session|None = None
 
     def set_session(self, session:Session):
-        self._session = session
+        super().set_session(session)
         self._filter_querier.set_session(session)
 
     def query_search(self, query_model:SearchQuery):

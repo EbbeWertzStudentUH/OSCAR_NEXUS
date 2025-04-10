@@ -1,7 +1,7 @@
+from queriers.AbstractQuerierClass import AbstractQuerier
 
-class TaggerQuerier:
 
-
+class TaggerQuerier(AbstractQuerier):
 
     def query_untag(self):
         pass
