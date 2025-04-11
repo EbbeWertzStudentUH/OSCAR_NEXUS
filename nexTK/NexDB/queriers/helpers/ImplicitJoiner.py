@@ -1,14 +1,16 @@
 import networkx as nx
 from sqlalchemy import Column
 from sqlalchemy.sql.schema import Table
-from sqlalchemy.orm import Query, aliased
+from sqlalchemy.orm import Query
 
-from db.models import Schema
+from db.models import Schema, Batch, ColValue, Field, Tag, TagKey
 
 
 class ImplicitJoiner:
-    def __init__(self, Base:type, exclude_clases:list[type]):
-        self._dependency_graph = self._build_dependency_graph(Base, exclude_clases)
+    def __init__(self, Base:type, exclude_classes:list[type]):
+        self._selectClass = None
+        self._joins = None
+        self._dependency_graph = self._build_dependency_graph(Base, exclude_classes)
         self.reset()
         
     def reset(self):
@@ -16,12 +18,12 @@ class ImplicitJoiner:
         self._selectClass = None
         
         
-    def _build_dependency_graph(self, Base:type, exclude_clases:list[type]) -> nx.Graph:
+    def _build_dependency_graph(self, Base:type, exclude_classes:list[type]) -> nx.Graph:
         graph = nx.Graph()
 
         for class_ in Base.registry.mappers:
             clazz = class_.class_
-            if clazz in exclude_clases:
+            if clazz in exclude_classes:
                 continue
             table: Table = clazz.__table__
 
@@ -42,8 +44,10 @@ class ImplicitJoiner:
                         col = fk_map[(source_class, target_class)]
                         raise ValueError(f"⚠️Implicit relations only work when there are no multiple foreign keys with the same table pair. Both {source_class} -> {col} and {source_class} -> {source_col} relate to {target_class}. If explicit relations should be supported, please edit this implicit joiner module.")
                     fk_map[(source_class, target_class)] = source_col
-                    
+
+                    print(f"adding {column.table} {fk.column.table}")
                     graph.add_edge(column.table, fk.column.table, source_col=source_col, target_col=target_col)
+                    graph.add_edge(fk.column.table, column.table, source_col=source_col, target_col=target_col)
 
         return graph
     
@@ -53,7 +57,9 @@ class ImplicitJoiner:
     def add_relation(self, join_class:type):
         select_table, join_table = self._selectClass.__table__, join_class.__table__
         path = nx.shortest_path(self._dependency_graph, source=select_table, target=join_table)
-        if len(path) == 1: path *= 2 # self referencing relation
+        # if len(path) == 1: path *= 2 # self referencing relation
+        if len(path) == 1:
+            return
         for i in range(len(path) - 1):
             existing_table: Table = path[i]
             new_table: Table = path[i + 1]

@@ -7,20 +7,26 @@ import pynng
 
 def send_query(client: NexDBClient, query: str):
     resp_type, data = client.send_and_receive("query", {"query": query})
-    if resp_type in ["query_success", "query_result", "query_break_warning"]:
-        print("✅", resp_type)
-        if data:
-            print(json.dumps(data, indent=2))
+    if resp_type == "query_name_id_result":
+        print("query was succesfully executed")
+        print("data:")
+        for i, (id, name) in enumerate(data.items()):
+            print(f"{i:<3} | {id} | {name}")
+    elif resp_type == "query_success":
+        print("query was succesfully executed")
+        print("[no data]")
+    elif resp_type == "query_break_warning":
+        print(f"query stopped early (but did not fail): {data}")
+        print("[no data]")
     else:
-        print("❌", resp_type)
-        print(data)
+        print(f"❌ {resp_type}: {data}")
 
 def shell_mode(client: NexDBClient):
     print("🔁 Entering NexDB shell. Type your query over multiple lines. Submit with empty line.")
     lines = []
     while True:
         try:
-            line = input("NexQL > ")
+            line = input("\033[32;1mNexQL > \033[0m")
             if line.strip() == "" and lines:
                 full_query = "\n".join(lines)
                 send_query(client, full_query)
@@ -45,11 +51,15 @@ def handle_query(args, client: NexDBClient):
 def handle_ingest(args, client: NexDBClient):
     yaml_text = Path(args.file).read_text()
     resp_type, data = client.send_and_receive("ingest", {"yaml_import_model": yaml_text})
-    if resp_type in ["query_success", "query_result", "query_break_warning"]:
-        print("✅", resp_type)
+    if resp_type == "ingest_success":
+        print("The batch was succesfully ingested")
     else:
-        print("❌", resp_type)
-        print(data)
+        print(f"❌ {resp_type}: {data}")
+        
+def handle_shutdown(client: NexDBClient):
+    resp_type, _ = client.send_and_receive("shutdown", {})
+    if resp_type == "bye_bye":
+        print("NexDB daemon is stopped")
 
 def main(daemon_executable_path:str):
     parser = argparse.ArgumentParser(description="NexDB CLI")
@@ -88,7 +98,7 @@ def main(daemon_executable_path:str):
         elif args.command == "ingest":
             handle_ingest(args, client)
         elif args.command == "shutdown":
-            client.send_and_receive("shutdown", {})
+            handle_shutdown(client)
 
         client.close()
 

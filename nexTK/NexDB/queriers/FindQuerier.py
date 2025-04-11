@@ -19,7 +19,7 @@ from util import class_name_to_class
 class FindQuerier(AbstractQuerier):
     def __init__(self, Base:type):
         super().__init__()
-        self._joiner = ImplicitJoiner(Base, exclude_clases=[SubSchema])
+        self._joiner = ImplicitJoiner(Base, exclude_classes=[SubSchema])
         self._filter_querier = FilterQuerierHelper()
 
     def set_session(self, session:Session):
@@ -56,7 +56,6 @@ class FindQuerier(AbstractQuerier):
         self._joiner.set_select_class(select_class)
 
         filters = self._add_collection_filters(query_model)
-
         for simple_filter in filters.simple_filters:
             filter_class = class_name_to_class(simple_filter.source_class)
             self._joiner.add_relation(filter_class)

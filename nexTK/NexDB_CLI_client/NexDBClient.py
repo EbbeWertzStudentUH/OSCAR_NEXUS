@@ -63,11 +63,11 @@ class NexDBClient:
         
         print("⌚ Loading NexDB engine...")
         self._send_msg("start", {})
-        resp_type, _ = self._receive_msg()
+        resp_type, data = self._receive_msg()
         if resp_type != "welcome":
             raise ValueError("NexDB engine did not start correctly.")
         
-        print("👍 NexDB is operational.")
+        print(f"👍 NexDB is operational. (loading took {data["loading_time"]:.3f}s)")
 
     def send_and_receive(self, command: str, params: dict) -> tuple[str, Any]:
         if not self._connected:

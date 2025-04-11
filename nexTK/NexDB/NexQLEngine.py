@@ -1,7 +1,6 @@
 from antlr4.error.ErrorListener import ErrorListener
 from sqlalchemy.orm import Session
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
-
 from Exceptions import NexQlSyntaxException
 from queriers.CollectQuerier import CollectQuerier
 from queriers.CreateQuerier import CreateQuerier
@@ -32,7 +31,7 @@ class NexQLEngine(NexQLParserListener):
         self._query_result = None
 
     def get_query_result(self):
-        return self._query_result
+        return {obj.id: obj.name for obj in self._query_result}
 
     def parse(self, query_string: str, session:Session):
         self._find_querier.set_session(session)
