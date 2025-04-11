@@ -6,3 +6,6 @@ class NexQlLogicException(Exception):
 
 class EarlyQueryStopException(Exception):
     pass
+
+class DataImportException(Exception):
+    pass

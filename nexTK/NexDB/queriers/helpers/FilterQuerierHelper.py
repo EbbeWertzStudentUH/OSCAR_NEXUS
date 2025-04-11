@@ -3,6 +3,7 @@ from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session, Query
 
 from db.models import TagKey, Tag, ConstValue, SubSchema, Field, Schema
+from queriers.helpers.query_resolvers import resolve_field_from_name_chain
 from query_models.helper_query_models import SimpleFilterCondition, TagFilterCondition, Filters, DataFilterCondition, \
     DeepIdentifier
 from util import class_name_to_class, operator_from_str
@@ -39,23 +40,7 @@ class FilterQuerierHelper:
         if not deep_id.is_name_chain:
             return deep_id.uuid
 
-        current_schema_id = self._collection_schema_id
-        for name in deep_id.sub_schemas_name_chain:
-            sub_schema = self._session.query(SubSchema).filter_by(parent_schema_id=current_schema_id, name=name).one_or_none()
-
-            if sub_schema is None:
-                raise ValueError(f"No sub schema named '{name}' found under schema ID {current_schema_id}")
-
-            current_schema_id = sub_schema.child_schema_id
-
-        field = self._session.query(Field.id).filter_by(
-            schema_id=current_schema_id,
-            name=deep_id.tail_field_name
-        ).one_or_none()
-
-        if field is None:
-            raise ValueError(f"Field '{deep_id.tail_field_name}' not found in schema ID {current_schema_id}")
-
+        field = resolve_field_from_name_chain(self._collection_schema_id, deep_id.sub_schemas_name_chain, deep_id.tail_field_name, self._session)
         return field.id
 
 

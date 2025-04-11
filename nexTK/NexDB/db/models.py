@@ -40,12 +40,29 @@ class Batch(Base):
     name = Column(String)
     created = Column(DateTime)
 
+class ConstValue(Base):
+    __tablename__ = 'const_values'
+    id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()))
+    field_id = Column(String, ForeignKey('fields.id'))
+    dataset_id = Column(String, ForeignKey('datasets.id'))
+    value = Column(String)
+
+class ColValue(Base):
+    __tablename__ = 'col_values'
+    id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()))
+    field_id = Column(String, ForeignKey('fields.id'))
+    dataset_id = Column(String, ForeignKey('datasets.id'))
+
+
 class Collection(Base):
     __tablename__ = 'collections'
     id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()))
     schema_id = Column(String, ForeignKey('schemas.id'))
     name = Column(String)
     filters = Column(String) # manually ser/de json
+
+
+
 
 class TagKey(Base):
     __tablename__ = 'tag_keys'
@@ -63,17 +80,5 @@ class TagAssignment(Base):
     tag_id = Column(String, ForeignKey('tags.id'), primary_key=True)
     batch_id = Column(String, ForeignKey('batches.id'), primary_key=True)
 
-class ConstValue(Base):
-    __tablename__ = 'const_values'
-    id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()))
-    field_id = Column(String, ForeignKey('fields.id'))
-    dataset_id = Column(String, ForeignKey('datasets.id'))
-    value = Column(String)
-
-class ColValue(Base):
-    __tablename__ = 'col_values'
-    id = Column(String, primary_key=True, default= lambda: str(uuid.uuid4()))
-    field_id = Column(String, ForeignKey('fields.id'))
-    dataset_id = Column(String, ForeignKey('datasets.id'))
     
 

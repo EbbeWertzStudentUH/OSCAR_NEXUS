@@ -6,3 +6,4 @@ COMPRESSED_COLS
 **/.idea
 **/NexDB.db
 **/debug_output.json
+**/NexDB_DATA**

@@ -8,6 +8,7 @@ from collection_store import COLLECTION_STORE
 from queriers.helpers.ImplicitJoiner import ImplicitJoiner
 from db.models import Tag, TagKey, Schema, SubSchema, ConstValue, Field, Collection
 from queriers.helpers.AbstractQuerierClass import AbstractQuerier
+from queriers.helpers.query_resolvers import simple_id_resolve
 from query_models.helper_query_models import Filters
 from query_models.reading_query_models import FindQuery
 from sqlalchemy.orm import Session
@@ -26,14 +27,12 @@ class FindQuerier(AbstractQuerier):
         self._filter_querier.set_session(session)
 
     def _resolve_collection_data(self, query_model:FindQuery) -> tuple[str, Filters]:
-        if COLLECTION_STORE.exists(query_model.collection, self._session):
+        if COLLECTION_STORE.exists(query_model.collection.value, self._session):
             filters = COLLECTION_STORE.get_filter(query_model.collection, self._session)
             schema_id = COLLECTION_STORE.get_schema_id(query_model.collection, self._session)
             return schema_id, filters
 
-        collection_obj = self._session.query(Collection).filter_by(name=query_model.collection).one_or_none()
-        if not collection_obj:
-            raise EarlyQueryStopException(f"No collection named '{query_model.collection}' found")
+        collection_obj = simple_id_resolve(Collection, "collection", query_model.collection, self._session)
 
         schema_id:str = collection_obj.schema_id
         filters_dict = from_json(collection_obj.filters)

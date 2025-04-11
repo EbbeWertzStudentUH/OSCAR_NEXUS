@@ -3,6 +3,7 @@ from operator import and_
 from Exceptions import EarlyQueryStopException
 from db.models import Tag, TagKey, Batch, TagAssignment
 from queriers.helpers.AbstractQuerierClass import AbstractQuerier
+from queriers.helpers.query_resolvers import simple_id_resolve
 from query_models.helper_query_models import SimpleId
 from query_models.mutating_query_models import TagAssignQuery
 
@@ -19,18 +20,9 @@ class TaggerQuerier(AbstractQuerier):
             raise EarlyQueryStopException(f"No tag and/or topic was found for topic:'{query_model.topic_id.value}', tag:'{query_model.tag_id.value}'")
         return tag_obj.id
 
-    def _resolve_batch_id(self, batch_simple_id:SimpleId):
-        if batch_simple_id.field == 'id':
-            return batch_simple_id.value
-
-        batch_obj = self._session.query(Batch).filter_by(name=batch_simple_id.value).one_or_none()
-        if batch_obj is None:
-            raise EarlyQueryStopException(f"No batch named '{batch_simple_id.value}' found")
-        return batch_obj.id
-
     def query_tag(self, query_model:TagAssignQuery):
         tag_id = self._resolve_tag_id(query_model)
-        batch_id = self._resolve_batch_id(tag_id)
+        batch_id = simple_id_resolve(Batch, "batch", query_model.batch_id, self._session).id
         tag_assignment = TagAssignment(tag_id=tag_id, batch_id=batch_id)
         self._session.add(tag_assignment)
         self._session.commit()

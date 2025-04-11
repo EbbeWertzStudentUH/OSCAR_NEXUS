@@ -53,7 +53,7 @@ LI_FLOAT : F_FLOAT;
 LI_INT : F_INTEGER;
 LI_WILDCARD_STRING : '"' F_FREE_STRING '*"';
 LI_STRING : '"' F_FREE_STRING '"';
-LI_DATATYPE : 'STRING' | 'INT' | 'FLOAT' | 'TIMESTAMP';
+LI_DATATYPE : F_DTYPE/*  | '[' F_DTYPE ']'*/;
 
 // OPERATORS
 OP_EQUALS : '=';
@@ -68,6 +68,7 @@ ID_UUID : F_UUID; // actual
 // ID_NAME : '_name_'; // debug
 // ID_UUID : '_uuid_'; // debug
 
+fragment F_DTYPE : 'STRING' | 'INT' | 'FLOAT' | 'TIMESTAMP';
 fragment F_FREE_STRING : ~["\r\n]*;
 fragment F_SNAKE_CASE_STRING : [a-z] [a-zA-Z0-9_]*;
 fragment F_X : [0-9a-f];

@@ -1,3 +1,4 @@
+import os
 
 from CommandController import CommandController
 import json
@@ -28,8 +29,8 @@ def _receive_msg(socket:pynng.Rep0) -> tuple[bool, str, dict]:
         return False, '', {}
 
 
-def main(database_url:str, message_queue_ipc_socket:str):
-    controller = CommandController(database_url)
+def main(database_url:str, message_queue_ipc_socket:str, data_store_path:str):
+    controller = CommandController(database_url, data_store_path)
 
     with pynng.Rep0(listen=message_queue_ipc_socket) as rep_socket:
         print("server started")
@@ -49,6 +50,10 @@ def main(database_url:str, message_queue_ipc_socket:str):
 
 
 if __name__ == '__main__':
-    db_url = "sqlite:///NexDB.db"
+    data_path = "./../NexDB_DATA"
+    if not os.path.exists(data_path):
+        os.makedirs(data_path, exist_ok=True)
+    store_path = f"{data_path}/datasets"
+    db_url = f"sqlite:///{data_path}/NexDB.db"
     mq_socket = "ipc:///tmp/oscar_nexus_nexdb_daemon"
-    main(db_url, mq_socket)
+    main(db_url, mq_socket, store_path)
