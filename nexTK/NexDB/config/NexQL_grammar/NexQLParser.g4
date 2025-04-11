@@ -12,7 +12,7 @@ query : KW_FIND (entity_type=bi_findable_entity_type | topic=id_simple) (KW_IN c
 
 // CREATE (Batch and dataset are not to create)
 create_body : KW_TOPIC name=ID_NAME #create_tag_key
-            | KW_TAG name=ID_NAME KW_FOR keyId=id_simple #create_tag_value
+            | KW_TAG name=ID_NAME KW_FOR key_id=id_simple #create_tag_value
             | KW_COLLECTION name=ID_NAME KW_FROM existing_collect_name=ID_NAME #create_collection
             | KW_SCHEMA name=ID_NAME KW_INFO info=LI_STRING fields+=field_assignment* subs+=subschema_assignment* #create_schema;
 

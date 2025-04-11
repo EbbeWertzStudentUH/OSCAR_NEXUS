@@ -3,8 +3,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from db.models import Base
 
 class DatabaseConnection:
-    def __init__(self, db_url:str):
-        engine = create_engine(db_url)
+    def __init__(self, db_url:str, echo=False):
+        engine = create_engine(db_url, echo=echo)
         self._SessionClass = sessionmaker(bind=engine)
         self._sessions = []
         Base.metadata.create_all(engine)

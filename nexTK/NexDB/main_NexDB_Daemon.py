@@ -1,52 +1,44 @@
 import os
-
-from CommandController import CommandController
-import json
-from typing import Any
 import pynng
+from message_queue_helpers import send_msg, receive_msg
 
-
-def _send_msg(socket:pynng.Rep0, resp_type:str, data:Any):
-    resp_json = {"type": resp_type, "data": data}
-    print(f"sent: {resp_type} - {data}")
-    socket.send(json.dumps(resp_json).encode('utf-8'))
-
-def _receive_msg(socket:pynng.Rep0) -> tuple[bool, str, dict]:
-    request_msg = socket.recv().decode('utf-8')
-    try:
-        msg_json = json.loads(request_msg)
-
-        if "cmd" not in msg_json or "params" not in msg_json:
-            _send_msg(socket, "request_error", "Request should be json encoded with a 'cmd' and 'params' field.")
-            return False, '', {}
-
-        command, params = msg_json["cmd"], msg_json["params"]
-        print(f"got: {command} - {params}")
-        return True, command, params
-
-    except TypeError:
-        _send_msg(socket, "request_error", "Request params should be valid json syntax")
-        return False, '', {}
+def load_controller(database_url:str, data_store_path:str):
+    from time import time
+    start_t = time()
+    from CommandController import CommandController
+    load_duration = time() - start_t
+    return CommandController(database_url, data_store_path, True), load_duration
 
 
 def main(database_url:str, message_queue_ipc_socket:str, data_store_path:str):
-    controller = CommandController(database_url, data_store_path)
-
+    controller = None
     with pynng.Rep0(listen=message_queue_ipc_socket) as rep_socket:
-        print("server started")
+        print("message queue listener started")
 
         while True:
 
-            success, command, params = _receive_msg(rep_socket)
+            success, command, params = receive_msg(rep_socket)
             if not success:
                 continue
 
-            if command == "shutdown":
+            if command == "ping":
+                send_msg(rep_socket, "pong", {})
+                continue
+            elif command == "start":
+                if controller is None:
+                    controller, load_time = load_controller(database_url, data_store_path)
+                send_msg(rep_socket, "welcome", {"loading_time":load_time})
+                continue
+            elif command == "shutdown":
+                send_msg(rep_socket, "bye_bye", {})
                 rep_socket.close()
                 break
 
+            if controller is None:
+                send_msg(rep_socket, "request_error", "You cannot send engine specific commands yet. Use the 'start' command to load the engine.")
+                continue
             resp_type, resp_data = controller.execute(command, params)
-            _send_msg(rep_socket, resp_type, resp_data)
+            send_msg(rep_socket, resp_type, resp_data)
 
 
 if __name__ == '__main__':

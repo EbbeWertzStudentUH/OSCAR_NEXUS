@@ -7,8 +7,8 @@ from import_export.BatchImporter import BatchImporter
 
 
 class CommandController:
-    def __init__(self, database_url:str, data_store_path:str):
-        self._database = DatabaseConnection(database_url)
+    def __init__(self, database_url:str, data_store_path:str, log_queries:bool=False):
+        self._database = DatabaseConnection(database_url, log_queries)
         self._query_engine = NexQLEngine(Base)
         self._session = self._database.make_session()
         self._batch_importer = BatchImporter(data_store_path, self._session)

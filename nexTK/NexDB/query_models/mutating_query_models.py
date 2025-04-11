@@ -31,7 +31,7 @@ class TagCreateQuery:
 
     @classmethod
     def from_context(cls, ctx: NexQLParser.Create_tag_valueContext):
-        key_id = SimpleId.from_context(ctx.key_filter)
+        key_id = SimpleId.from_context(ctx.key_id)
         return cls(ctx.name.text, key_id)
 
 @dataclass
