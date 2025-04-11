@@ -7,3 +7,7 @@ COMPRESSED_COLS
 **/NexDB.db
 **/debug_output.json
 **/NexDB_DATA**
+**/main.spec
+**/nexdb.spec
+**/build
+**/dist

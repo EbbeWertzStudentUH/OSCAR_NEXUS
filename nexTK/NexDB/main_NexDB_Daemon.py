@@ -22,7 +22,7 @@ def main(database_url:str, message_queue_ipc_socket:str, data_store_path:str):
                 continue
 
             if command == "ping":
-                send_msg(rep_socket, "pong", {})
+                send_msg(rep_socket, "pong", {"status": "waiting" if controller is None else "operational"})
                 continue
             elif command == "start":
                 if controller is None:
